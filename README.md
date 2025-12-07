@@ -1,31 +1,113 @@
 # Prometheus Hetzner Storage Box Exporter
 
-[![CI](https://github.com/crstian/prometheus-storagebox-exporter/workflows/CI/badge.svg)](https://github.com/crstian/prometheus-storagebox-exporter/actions)
-[![Go Report Card](https://goreportcard.com/badge/github.com/crstian/prometheus-storagebox-exporter)](https://goreportcard.com/report/github.com/crstian/prometheus-storagebox-exporter)
-[![License](https://img.shields.io/github/license/crstian/prometheus-storagebox-exporter)](LICENSE)
-[![GitHub release](https://img.shields.io/github/release/crstian/prometheus-storagebox-exporter.svg)](https://github.com/crstian/prometheus-storagebox-exporter/releases/)
+<div align="center">
 
-A Prometheus exporter for [Hetzner Storage Box](https://www.hetzner.com/storage/storage-box) metrics written in Go. This exporter uses the modern Hetzner API (`api.hetzner.com`) to collect and expose storage box statistics in Prometheus format.
+<img src="https://raw.githubusercontent.com/crstian19/prometheus-storagebox-exporter/main/.github/logo.svg" alt="Storage Box Exporter Logo" width="200">
 
-## Features
+**Modern Prometheus exporter for Hetzner Storage Box with comprehensive metrics**
 
-- Modern Hetzner API integration (not the deprecated Robot API)
-- Comprehensive metrics collection (12+ metrics)
-- Docker support with multi-architecture images (amd64, arm64)
-- Kubernetes-ready deployment
-- Minimal resource footprint (<50MB memory)
-- Graceful shutdown support
-- Health check endpoint
-- Built-in landing page with metrics overview
+![CI](https://img.shields.io/github/actions/workflow/status/crstian19/prometheus-storagebox-exporter/CI?label=CI&logo=github&style=flat-square)
+![Go Report Card](https://goreportcard.com/badge/github.com/crstian19/prometheus-storagebox-exporter?style=flat-square)
+![License](https://img.shields.io/github/license/crstian19/prometheus-storagebox-exporter?style=flat-square)
+![Docker Image Size](https://img.shields.io/docker/image-size/ghcr.io/crstian19/prometheus-storagebox-exporter/latest?style=flat-square&logo=docker)
+![Docker Pulls](https://img.shields.io/docker/pulls/ghcr.io/crstian19/prometheus-storagebox-exporter?style=flat-square&logo=docker)
+![GitHub Release](https://img.shields.io/github/v/release/crstian19/prometheus-storagebox-exporter?style=flat-square&logo=github)
+![Go Version](https://img.shields.io/github/go-mod/go-version/crstian19/prometheus-storagebox-exporter?style=flat-square&logo=go)
 
-## Metrics
+[Quick Start](#-quick-start) • [Metrics](#-metrics) • [Installation](#-installation) • [Grafana Dashboard](#-grafana-dashboard) • [Configuration](#%EF%B8%8F-configuration)
 
-The exporter exposes the following metrics:
+</div>
+
+---
+
+## 📋 Overview
+
+A Prometheus exporter for [Hetzner Storage Box](https://www.hetzner.com/storage/storage-box) that uses the modern Hetzner API (`api.hetzner.com`) instead of the deprecated Robot API.
+
+- ✅ **Modern API integration** - Uses current Hetzner API (no sunset deadline)
+- 📊 **Comprehensive metrics** - 15+ metrics covering usage, access, and configuration
+- 🐳 **Docker ready** - Multi-architecture images (amd64, arm64)
+- ☸️ **Kubernetes ready** - Includes manifests and Helm chart
+- 🎯 **Minimal footprint** - Less than 50MB memory usage
+- 📈 **Grafana dashboard** - Pre-built dashboard with visualizations
+- 🔒 **Secure** - Bearer token authentication
+
+### Why this exporter?
+
+The existing [fleaz/prometheus-storagebox-exporter](https://github.com/fleaz/prometheus-storagebox-exporter) uses the deprecated Robot API which will be sunset in **July 2025**. This exporter:
+
+- Uses the modern Hetzner API that won't be deprecated
+- Provides 4x more metrics including access settings and protection status
+- Offers multi-architecture Docker images
+- Includes a comprehensive Grafana dashboard
+- Is actively maintained with CI/CD automation
+
+---
+
+## 🚀 Quick Start
+
+### Prerequisites
+
+You need a Hetzner API token with read permissions:
+
+1. Log in to [Hetzner Cloud Console](https://console.hetzner.cloud/)
+2. Navigate to **Security** → **API Tokens**
+3. Create a new token with **Read** permissions
+4. Copy the token for configuration
+
+### Docker Compose (Recommended)
+
+Create a `.env` file:
+
+```bash
+# Copy the example
+cp .env.example .env
+
+# Edit and add your token
+nano .env
+```
+
+```bash
+docker-compose up -d
+```
+
+### Docker
+
+```bash
+docker run -d \
+  --name storagebox-exporter \
+  -p 9509:9509 \
+  -e HETZNER_TOKEN="your-api-token" \
+  ghcr.io/crstian19/prometheus-storagebox-exporter:latest
+```
+
+### Binary
+
+```bash
+# Linux amd64
+wget https://github.com/crstian19/prometheus-storagebox-exporter/releases/latest/download/prometheus-storagebox-exporter_linux_x86_64.tar.gz
+tar xzf prometheus-storagebox-exporter_linux_x86_64.tar.gz
+
+# Run
+export HETZNER_TOKEN="your-api-token"
+./prometheus-storagebox-exporter
+```
+
+### Access Metrics
+
+Open http://localhost:9509/metrics to view the exported metrics.
+
+---
+
+## 📊 Metrics
+
+The exporter exposes 15+ metrics organized in 4 categories:
 
 ### Core Storage Metrics
 
 | Metric | Type | Description | Labels |
 |--------|------|-------------|--------|
+| `storagebox_disk_quota_bytes` | Gauge | Total storage quota in bytes | id, name, server, location |
 | `storagebox_disk_usage_bytes` | Gauge | Total used diskspace in bytes | id, name, server, location |
 | `storagebox_disk_usage_data_bytes` | Gauge | Diskspace used by files in bytes | id, name, server, location |
 | `storagebox_disk_usage_snapshots_bytes` | Gauge | Diskspace used by snapshots in bytes | id, name, server, location |
@@ -36,12 +118,24 @@ The exporter exposes the following metrics:
 |--------|------|-------------|--------|
 | `storagebox_info` | Info | Storage box information (value always 1) | id, name, username, server, location, storage_type, system |
 | `storagebox_status` | Gauge | Current status (1=active, 0=inactive) | id, name, status |
+| `storagebox_created_timestamp` | Gauge | Unix timestamp of creation | id, name |
+
+### Access Settings Metrics
+
+| Metric | Type | Description | Labels |
+|--------|------|-------------|--------|
 | `storagebox_access_ssh_enabled` | Gauge | SSH access enabled (1=yes, 0=no) | id, name |
 | `storagebox_access_samba_enabled` | Gauge | Samba/CIFS access enabled (1=yes, 0=no) | id, name |
 | `storagebox_access_webdav_enabled` | Gauge | WebDAV access enabled (1=yes, 0=no) | id, name |
+| `storagebox_access_zfs_enabled` | Gauge | ZFS access enabled (1=yes, 0=no) | id, name |
+| `storagebox_reachable_externally` | Gauge | External reachability (1=yes, 0=no) | id, name |
+
+### Protection & Snapshot Metrics
+
+| Metric | Type | Description | Labels |
+|--------|------|-------------|--------|
 | `storagebox_snapshot_plan_enabled` | Gauge | Automatic snapshots configured (1=yes, 0=no) | id, name |
 | `storagebox_protection_delete` | Gauge | Delete protection status (1=protected, 0=no) | id, name |
-| `storagebox_created_timestamp` | Gauge | Unix timestamp of creation | id, name |
 
 ### Exporter Metrics
 
@@ -49,76 +143,98 @@ The exporter exposes the following metrics:
 |--------|------|-------------|
 | `storagebox_exporter_scrape_duration_seconds` | Gauge | Duration of the scrape in seconds |
 | `storagebox_exporter_scrape_errors_total` | Counter | Total number of scrape errors |
+| `storagebox_exporter_up` | Gauge | Exporter health status (1=healthy, 0=unhealthy) |
 
-## Installation
+---
 
-### Prerequisites
+## 📈 Grafana Dashboard
 
-You need a Hetzner API token with read permissions:
+A comprehensive Grafana dashboard is included with 21 panels:
 
-1. Log in to [Hetzner Cloud Console](https://console.hetzner.cloud/)
-2. Navigate to **Security** → **API Tokens**
-3. Create a new token with **Read** permissions
-4. Copy the token (you'll need it for configuration)
+### Dashboard Features
 
-### Binary
+- **📊 Overview Section**: Gauges for disk usage percentage and disk space distribution
+- **📈 Time Series Graphs**:
+  - Disk usage over time with quota visualization
+  - Usage breakdown (Data vs Snapshots) with dual Y-axes
+  - Disk usage percentage trends
+  - Storage growth rate analysis (1h intervals)
+- **📋 Detailed Table**: Complete storage box details with all metrics
+- **🔧 Access Status**: Visual indicators for SSH, Samba, WebDAV, and ZFS access
+- **🛡️ Configuration Info**: Snapshot plan and delete protection status
+- **📊 Multi-box Support**: Variable to filter by specific storage box or view all
 
-Download the latest release for your platform from the [releases page](https://github.com/crstian/prometheus-storagebox-exporter/releases):
+### Quick Setup with Docker Compose
 
-```bash
-# Linux amd64
-wget https://github.com/crstian/prometheus-storagebox-exporter/releases/latest/download/prometheus-storagebox-exporter_linux_x86_64.tar.gz
-tar xzf prometheus-storagebox-exporter_linux_x86_64.tar.gz
-chmod +x prometheus-storagebox-exporter
-
-# Run the exporter
-export HETZNER_TOKEN="your-api-token"
-./prometheus-storagebox-exporter
-```
-
-### Docker
+The repository includes a complete Docker Compose setup with:
 
 ```bash
-docker run -d \
-  --name storagebox-exporter \
-  -p 9509:9509 \
-  -e HETZNER_TOKEN="your-api-token" \
-  ghcr.io/crstian/prometheus-storagebox-exporter:latest
+# Start all services (Exporter + Prometheus + Grafana)
+./test-env.sh
+
+# Or manually:
+docker-compose -f docker-compose.dev.yml up -d
 ```
 
-### Docker Compose
+Access points:
+- 🎯 **Grafana Dashboard**: http://localhost:3000 (admin/admin)
+- 📈 **Prometheus**: http://localhost:9090
+- 🔧 **Exporter**: http://localhost:9509/metrics
 
-Create a `.env` file (see [.env.example](.env.example)):
+### Import Manually
 
-```bash
-cp .env.example .env
-# Edit .env and add your HETZNER_TOKEN
-```
+1. Open Grafana → **Dashboards** → **Import**
+2. Upload `grafana-provisioning/dashboards/grafana-dashboard.json`
+3. Select your Prometheus data source
+4. Click **Import**
 
-Then run:
+### Dashboard Panels
 
-```bash
-docker-compose up -d
-```
+The dashboard includes:
 
-### From Source
+<table>
+<tr>
+<td width="50%">
 
-```bash
-# Clone the repository
-git clone https://github.com/crstian/prometheus-storagebox-exporter.git
-cd prometheus-storagebox-exporter
+- Disk Usage Percentage (Gauge)
+- Disk Space Distribution (Pie)
+- Total Quota (Stat)
+- Total Used (Stat)
+- Free Space (Stat)
+- Data Files Usage (Stat)
 
-# Build
-go build -o prometheus-storagebox-exporter .
+</td>
+<td width="50%">
 
-# Run
-export HETZNER_TOKEN="your-api-token"
-./prometheus-storagebox-exporter
-```
+- Snapshots Usage (Stat)
+- Snapshot Overhead (Stat)
+- Disk Usage Over Time
+- Usage Breakdown Over Time
+- Disk Usage Percentage Over Time
+- Storage Growth Rate (1h)
 
-## Configuration
+</td>
+</tr>
+</table>
 
-Configuration can be done via environment variables or command-line flags.
+**Access Settings Panels:**
+- SSH Access Status
+- Samba Access Status
+- WebDAV Access Status
+- ZFS Access Status
+- External Reachability Status
+
+**Configuration Panels:**
+- Storage Box Status
+- Snapshot Plan Status
+- Delete Protection Status
+
+**Details Table:**
+- Storage Box Details (comprehensive table)
+
+---
+
+## ⚙️ Configuration
 
 ### Environment Variables
 
@@ -142,22 +258,112 @@ Flags:
   --version                  Show version information and exit
 ```
 
-## Prometheus Configuration
+---
 
-Add this to your `prometheus.yml`:
+## 🐳 Docker Deployment
+
+### Docker Compose
+
+Complete `docker-compose.yml` example with Prometheus and Grafana:
+
+<details>
+<summary>Click to expand Docker Compose</summary>
+
+```yaml
+version: '3.8'
+
+services:
+  # Storage Box Exporter
+  storagebox-exporter:
+    image: ghcr.io/crstian19/prometheus-storagebox-exporter:latest
+    container_name: storagebox-exporter
+    restart: unless-stopped
+    ports:
+      - "9509:9509"
+    environment:
+      - HETZNER_TOKEN=${HETZNER_TOKEN}
+    networks:
+      - monitoring
+
+  # Prometheus
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    restart: unless-stopped
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/usr/share/prometheus/console_libraries'
+      - '--web.console.templates=/usr/share/prometheus/consoles'
+      - '--web.enable-lifecycle'
+    networks:
+      - monitoring
+    depends_on:
+      - storagebox-exporter
+
+  # Grafana
+  grafana:
+    image: grafana/grafana:10.2.0
+    container_name: grafana
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_USERS_ALLOW_SIGN_UP=false
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./grafana-provisioning:/etc/grafana/provisioning:ro
+    networks:
+      - monitoring
+    depends_on:
+      - prometheus
+
+networks:
+  monitoring:
+    driver: bridge
+
+volumes:
+  prometheus-data:
+  grafana-data:
+```
+
+</details>
+
+### Prometheus Configuration
+
+Add to your `prometheus.yml`:
 
 ```yaml
 scrape_configs:
   - job_name: 'hetzner-storagebox'
     static_configs:
-      - targets: ['localhost:9509']
+      - targets: ['storagebox-exporter:9509']
     scrape_interval: 60s
     scrape_timeout: 30s
 ```
 
-### Kubernetes Deployment
+---
 
-Example Kubernetes manifests:
+## ☸️ Kubernetes Deployment
+
+### Quick Deploy
+
+```bash
+# Apply all manifests
+kubectl apply -f k8s/
+
+# Check status
+kubectl get pods -n monitoring
+```
+
+### Manifests
 
 <details>
 <summary>Click to expand Kubernetes YAML</summary>
@@ -191,7 +397,7 @@ spec:
     spec:
       containers:
       - name: storagebox-exporter
-        image: ghcr.io/crstian/prometheus-storagebox-exporter:latest
+        image: ghcr.io/crstian19/prometheus-storagebox-exporter:latest
         ports:
         - containerPort: 9509
           name: metrics
@@ -256,76 +462,9 @@ spec:
 
 </details>
 
-## Example Metrics Output
+---
 
-```prometheus
-# HELP storagebox_disk_usage_bytes Total used diskspace in bytes
-# TYPE storagebox_disk_usage_bytes gauge
-storagebox_disk_usage_bytes{id="123456",name="backup-server",server="u123456.your-storagebox.de",location="fsn1"} 1.073741824e+11
-
-# HELP storagebox_disk_usage_data_bytes Diskspace used by files in bytes
-# TYPE storagebox_disk_usage_data_bytes gauge
-storagebox_disk_usage_data_bytes{id="123456",name="backup-server",server="u123456.your-storagebox.de",location="fsn1"} 9.663676416e+10
-
-# HELP storagebox_disk_usage_snapshots_bytes Diskspace used by snapshots in bytes
-# TYPE storagebox_disk_usage_snapshots_bytes gauge
-storagebox_disk_usage_snapshots_bytes{id="123456",name="backup-server",server="u123456.your-storagebox.de",location="fsn1"} 1.073741824e+10
-
-# HELP storagebox_info Storage box information
-# TYPE storagebox_info gauge
-storagebox_info{id="123456",name="backup-server",username="u123456",server="u123456.your-storagebox.de",location="fsn1",storage_type="BX10",system="linux"} 1
-
-# HELP storagebox_status Current status of storage box (1=active, 0=inactive)
-# TYPE storagebox_status gauge
-storagebox_status{id="123456",name="backup-server",status="active"} 1
-
-# HELP storagebox_access_ssh_enabled SSH access enabled (1=enabled, 0=disabled)
-# TYPE storagebox_access_ssh_enabled gauge
-storagebox_access_ssh_enabled{id="123456",name="backup-server"} 1
-```
-
-## Grafana Dashboard
-
-A pre-built Grafana dashboard is included in the repository: [grafana-dashboard.json](grafana-dashboard.json)
-
-### Features
-
-The dashboard includes:
-- **Overview**: Total storage boxes count, status, scrape metrics
-- **Disk Usage Graph**: Time series showing total, data, and snapshot usage
-- **Usage Breakdown**: Individual panels for data and snapshot usage
-- **Access Settings**: Visual status of SSH, Samba, and WebDAV access
-- **Configuration**: Snapshot plan and delete protection status
-- **Multi-box View**: Bar chart comparing all storage boxes
-- **Variables**: Dropdown to select specific storage box
-
-### Import Instructions
-
-1. Open Grafana and navigate to **Dashboards** → **Import**
-2. Click **Upload JSON file**
-3. Select `grafana-dashboard.json` from this repository
-4. Select your Prometheus data source
-5. Click **Import**
-
-Alternatively, copy the contents of `grafana-dashboard.json` and paste it into the import dialog.
-
-### Screenshot
-
-The dashboard displays:
-- Storage usage trends over time
-- Current usage statistics with thresholds
-- Access configuration at a glance
-- Exporter health metrics
-
-### Customization
-
-You can customize the dashboard by:
-- Adjusting time ranges and refresh intervals
-- Modifying thresholds for alerts
-- Adding additional panels for specific metrics
-- Creating alert rules based on usage thresholds
-
-## Development
+## 🏗️ Development
 
 ### Building
 
@@ -352,19 +491,14 @@ golangci-lint run
 │   ├── collector/          # Prometheus collector implementation
 │   ├── hetzner/           # Hetzner API client
 │   └── config/            # Configuration handling
+├── grafana-provisioning/  # Grafana dashboard provisioning
+├── k8s/                   # Kubernetes manifests
 ├── .github/workflows/     # CI/CD pipelines
 ├── Dockerfile             # Multi-stage Docker build
 ├── docker-compose.yml     # Docker Compose configuration
+├── docker-compose.dev.yml # Development environment
 └── DESIGN.md             # Architecture documentation
 ```
-
-## Versioning
-
-This project follows [Semantic Versioning](https://semver.org/):
-
-- **MAJOR**: Breaking changes (API changes, removed metrics)
-- **MINOR**: New features (new metrics, new flags)
-- **PATCH**: Bug fixes, documentation updates
 
 ### Creating a Release
 
@@ -380,45 +514,80 @@ git push origin v1.0.0
 # - Create a GitHub release with artifacts
 ```
 
-## Comparison with Reference Implementation
+---
 
-This exporter improves upon [fleaz/prometheus-storagebox-exporter](https://github.com/fleaz/prometheus-storagebox-exporter):
+## 🆚 Comparison
 
-| Feature | This Exporter | Reference |
-|---------|---------------|-----------|
-| API | Modern Hetzner API (api.hetzner.com) | Deprecated Robot API |
-| Authentication | Bearer token | Basic auth (user/pass) |
-| Metrics Count | 12+ metrics | 4 metrics |
-| Info Metrics | Yes (with rich labels) | No |
-| Access Settings | Yes (SSH, Samba, WebDAV) | No |
-| Protection Status | Yes | No |
-| Snapshot Plan Info | Yes | No |
-| Multi-arch Docker | Yes (amd64, arm64) | amd64 only |
-| CI/CD | GitHub Actions + goreleaser | Not included |
-| Future-proof | Yes (API sunset: never) | No (API sunset: July 2025) |
+| Feature | This Exporter | Reference Implementation |
+|---------|---------------|-------------------------|
+| **API Version** | Modern Hetzner API (api.hetzner.com) | Deprecated Robot API |
+| **Authentication** | Bearer token | Basic auth (user/pass) |
+| **API Sunset** | Never | July 2025 ⚠️ |
+| **Metrics Count** | 15+ metrics | 4 metrics |
+| **Storage Types** | Quota, Usage, Data, Snapshots | Usage only |
+| **Access Settings** | SSH, Samba, WebDAV, ZFS, External | None |
+| **Protection Info** | Delete protection, Snapshot plan | None |
+| **Docker Images** | amd64, arm64, arm/v7 | amd64 only |
+| **Grafana Dashboard** | Included (21 panels) | Not included |
+| **Info Metrics** | Yes (with rich labels) | No |
+| **CI/CD** | GitHub Actions + goreleaser | Not included |
+| **Health Checks** | /health endpoint | Not included |
 
-## Troubleshooting
+---
 
-### Error: "HETZNER_TOKEN environment variable or --hetzner-token flag is required"
+## 🐛 Troubleshooting
+
+### Common Issues
+
+<details>
+<summary><strong>Error: "HETZNER_TOKEN environment variable or --hetzner-token flag is required"</strong></summary>
 
 Make sure you've set the `HETZNER_TOKEN` environment variable or passed it via the `--hetzner-token` flag.
 
-### Error: "API request failed with status 401"
+```bash
+export HETZNER_TOKEN="your-token-here"
+./prometheus-storagebox-exporter
+```
 
-Your API token is invalid or has expired. Generate a new token from the Hetzner Cloud Console.
+</details>
 
-### Error: "API request failed with status 403"
+<details>
+<summary><strong>Error: "API request failed with status 401"</strong></summary>
 
-Your API token doesn't have sufficient permissions. Make sure the token has at least **Read** permissions.
+Your API token is invalid or has expired. Generate a new token from the Hetzner Cloud Console with **Read** permissions.
 
-### No metrics appearing in Prometheus
+</details>
 
-1. Check that the exporter is running: `curl http://localhost:9509/health`
-2. Check the metrics endpoint: `curl http://localhost:9509/metrics`
-3. Verify your Prometheus scrape configuration
-4. Check the exporter logs for errors
+<details>
+<summary><strong>Error: "API request failed with status 403"</strong></summary>
 
-## Contributing
+Your API token doesn't have sufficient permissions. Ensure the token has at least **Read** permissions.
+
+</details>
+
+<details>
+<summary><strong>No metrics appearing in Prometheus</strong></summary>
+
+1. Check exporter health: `curl http://localhost:9509/health`
+2. Check metrics endpoint: `curl http://localhost:9509/metrics`
+3. Verify Prometheus configuration
+4. Check exporter logs: `docker logs storagebox-exporter`
+
+</details>
+
+<details>
+<summary><strong>Grafana dashboard shows "No data"</strong></summary>
+
+1. Verify Prometheus is scraping the exporter
+2. Check the data source URL in Grafana
+3. Ensure the storage box variable has values
+4. Check the time range in Grafana
+
+</details>
+
+---
+
+## 🤝 Contributing
 
 Contributions are welcome! Please:
 
@@ -428,17 +597,49 @@ Contributions are welcome! Please:
 4. Push to the branch (`git push origin feature/amazing-feature`)
 5. Open a Pull Request
 
-## License
+### Adding New Metrics
+
+1. Update the collector in `internal/collector/storagebox.go`
+2. Add metric definitions
+3. Update the Grafana dashboard if needed
+4. Update this README
+
+---
+
+## 📄 License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## Acknowledgments
+---
 
-- [Hetzner](https://www.hetzner.com/) for providing the Storage Box service and API
-- [Prometheus](https://prometheus.io/) for the monitoring toolkit
-- [fleaz/prometheus-storagebox-exporter](https://github.com/fleaz/prometheus-storagebox-exporter) for inspiration
+## 🙏 Credits
 
-## Support
+### Technologies
+- [Hetzner Storage Box](https://www.hetzner.com/storage/storage-box) - Backup storage solution
+- [Hetzner Cloud API](https://docs.hetzner.cloud/) - Modern API infrastructure
+- [Prometheus](https://prometheus.io/) - Monitoring toolkit and time series database
+- [Grafana](https://grafana.com/) - Analytics and monitoring platform
+- [Go](https://golang.org/) - Programming language
 
-- GitHub Issues: [Report a bug](https://github.com/crstian/prometheus-storagebox-exporter/issues)
-- Documentation: See [DESIGN.md](DESIGN.md) for architecture details
+### Inspiration
+- [fleaz/prometheus-storagebox-exporter](https://github.com/fleaz/prometheus-storagebox-exporter) - Original implementation
+- [Prometheus exporter best practices](https://github.com/prometheus/client_golang)
+
+---
+
+## 📞 Support
+
+- **Issues**: [Report a bug](https://github.com/crstian19/prometheus-storagebox-exporter/issues)
+- **Features**: [Request a feature](https://github.com/crstian19/prometheus-storagebox-exporter/issues/new?template=feature_request.md)
+- **Security**: [Report a vulnerability](https://github.com/crstian19/prometheus-storagebox-exporter/security)
+- **Documentation**: [DESIGN.md](DESIGN.md) for architecture details
+
+---
+
+<div align="center">
+
+**⭐ If this project helped you, consider giving it a star!**
+
+Made with ❤️ for the Prometheus and Hetzner communities
+
+</div>
