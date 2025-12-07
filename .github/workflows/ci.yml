@@ -112,7 +112,7 @@ jobs:
           context: .
           push: true
           tags: |
-            ghcr.io/${{ github.repository }}:ci-${{ github.sha }}
-            ghcr.io/${{ github.repository }}:latest
+            ghcr.io/crstian19/prometheus-storagebox-exporter:ci-${{ github.sha }}
+            ghcr.io/crstian19/prometheus-storagebox-exporter:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
