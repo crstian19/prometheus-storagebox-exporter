@@ -1,0 +1,15 @@
+global:
+  scrape_interval: 60s
+  evaluation_interval: 60s
+  scrape_timeout: 30s
+
+scrape_configs:
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  - job_name: 'storagebox-exporter'
+    static_configs:
+      - targets: ['storagebox-exporter:9509']
+    scrape_interval: 60s
+    scrape_timeout: 30s

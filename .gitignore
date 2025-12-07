@@ -18,7 +18,7 @@ coverage.*
 profile.cov
 
 # Dependency directories (remove the comment below to include it)
-# vendor/
+vendor/
 
 # Go workspace file
 go.work
@@ -26,7 +26,22 @@ go.work.sum
 
 # env file
 .env
+.env.local
+
+# Build artifacts
+/dist/
+/bin/
+/build/
+prometheus-storagebox-exporter
 
 # Editor/IDE
-# .idea/
-# .vscode/
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Local testing volumes
+grafana-data/
+prometheus-data/

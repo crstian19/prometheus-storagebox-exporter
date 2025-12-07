@@ -1,0 +1,33 @@
+version: '3.8'
+
+services:
+  storagebox-exporter:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        VERSION: ${VERSION:-dev}
+        GIT_COMMIT: ${GIT_COMMIT:-none}
+        BUILD_DATE: ${BUILD_DATE:-unknown}
+    image: prometheus-storagebox-exporter:${VERSION:-latest}
+    container_name: storagebox-exporter
+    restart: unless-stopped
+    ports:
+      - "${LISTEN_PORT:-9509}:9509"
+    environment:
+      - HETZNER_TOKEN=${HETZNER_TOKEN}
+      - LISTEN_ADDRESS=:9509
+      - METRICS_PATH=${METRICS_PATH:-/metrics}
+      - LOG_LEVEL=${LOG_LEVEL:-info}
+    healthcheck:
+      test: ["CMD", "/prometheus-storagebox-exporter", "--version"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    networks:
+      - monitoring
+
+networks:
+  monitoring:
+    driver: bridge
