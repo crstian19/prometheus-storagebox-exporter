@@ -2,7 +2,7 @@
 
 <div align="center">
 
-<img src="https://raw.githubusercontent.com/crstian19/prometheus-storagebox-exporter/main/.github/logo.svg" alt="Storage Box Exporter Logo" width="200">
+<img src="https://cdn.crstian.me/storage-box-exporter-logo.png" alt="Storage Box Exporter Logo" width="200">
 
 **Modern Prometheus exporter for Hetzner Storage Box with comprehensive metrics**
 
