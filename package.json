@@ -1,0 +1,51 @@
+{
+  "name": "prometheus-storagebox-exporter",
+  "version": "0.0.0",
+  "description": "Modern Prometheus exporter for Hetzner Storage Box with comprehensive metrics",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/crstian19/prometheus-storagebox-exporter.git"
+  },
+  "author": "crstian19",
+  "license": "MIT",
+  "devDependencies": {
+    "@semantic-release/changelog": "^6.0.3",
+    "@semantic-release/git": "^10.0.1",
+    "@semantic-release/github": "^9.2.6",
+    "@semantic-release/commit-analyzer": "^11.1.0",
+    "@semantic-release/release-notes-generator": "^12.1.0",
+    "@google/semantic-release-releases-plugin": "^4.0.0",
+    "semantic-release": "^22.0.5"
+  },
+  "release": {
+    "branches": ["main"],
+    "plugins": [
+      "@semantic-release/commit-analyzer",
+      "@semantic-release/release-notes-generator",
+      "@semantic-release/changelog",
+      "@google/semantic-release-releases-plugin",
+      [
+        "@semantic-release/github",
+        {
+          "assets": [
+            {
+              "path": "dist/**",
+              "label": "Distribution binaries"
+            },
+            {
+              "path": "checksums.txt",
+              "label": "Checksums"
+            }
+          ]
+        }
+      ],
+      [
+        "@semantic-release/git",
+        {
+          "assets": ["CHANGELOG.md"],
+          "message": "chore(release): ${nextRelease.version} [skip ci]\n\n${nextRelease.notes}"
+        }
+      ]
+    ]
+  }
+}
