@@ -6,7 +6,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/crstian/prometheus-storagebox-exporter/internal/hetzner"
+	"github.com/crstian19/prometheus-storagebox-exporter/internal/hetzner"
 	"github.com/prometheus/client_golang/prometheus"
 )
 

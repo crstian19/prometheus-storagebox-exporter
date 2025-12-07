@@ -10,9 +10,9 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/crstian/prometheus-storagebox-exporter/internal/collector"
-	"github.com/crstian/prometheus-storagebox-exporter/internal/config"
-	"github.com/crstian/prometheus-storagebox-exporter/internal/hetzner"
+	"github.com/crstian19/prometheus-storagebox-exporter/internal/collector"
+	"github.com/crstian19/prometheus-storagebox-exporter/internal/config"
+	"github.com/crstian19/prometheus-storagebox-exporter/internal/hetzner"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
