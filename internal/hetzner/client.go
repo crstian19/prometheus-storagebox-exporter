@@ -40,8 +40,8 @@ type StorageBox struct {
 	Status         string         `json:"status"`
 	Server         string         `json:"server"`
 	System         string         `json:"system"`
-	Location       Location       `json:"location"`
 	StorageBoxType StorageBoxType `json:"storage_box_type"`
+	Location       Location       `json:"location"`
 	Stats          Stats          `json:"stats"`
 	AccessSettings AccessSettings `json:"access_settings"`
 	SnapshotPlan   *SnapshotPlan  `json:"snapshot_plan"`
@@ -114,7 +114,10 @@ func (c *Client) ListStorageBoxes(ctx context.Context) ([]StorageBox, error) {
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		body, _ := io.ReadAll(resp.Body)
+		body, err := io.ReadAll(resp.Body)
+		if err != nil {
+			return nil, fmt.Errorf("API request failed with status %d: failed to read response body: %w", resp.StatusCode, err)
+		}
 		return nil, fmt.Errorf("API request failed with status %d: %s", resp.StatusCode, string(body))
 	}
 

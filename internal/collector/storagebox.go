@@ -15,9 +15,9 @@ type StorageBoxCollector struct {
 	client *hetzner.Client
 
 	// Core storage metrics
-	diskQuota     *prometheus.Desc
-	diskUsage     *prometheus.Desc
-	diskUsageData *prometheus.Desc
+	diskQuota          *prometheus.Desc
+	diskUsage          *prometheus.Desc
+	diskUsageData      *prometheus.Desc
 	diskUsageSnapshots *prometheus.Desc
 
 	// Info and status metrics
