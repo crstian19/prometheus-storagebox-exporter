@@ -1,6 +1,6 @@
 module github.com/crstian/prometheus-storagebox-exporter
 
-go 1.25.5
+go 1.23.5
 
 require (
 	github.com/beorn7/perks v1.0.1 // indirect

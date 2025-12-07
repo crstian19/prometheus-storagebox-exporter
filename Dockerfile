@@ -1,7 +1,7 @@
 # Multi-stage build for minimal final image
 
 # Stage 1: Build the Go binary
-FROM golang:1.25.5-alpine AS builder
+FROM golang:1.23.5-alpine AS builder
 
 # Install build dependencies
 RUN apk add --no-cache git ca-certificates tzdata
