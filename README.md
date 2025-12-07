@@ -33,8 +33,8 @@ A Prometheus exporter for [Hetzner Storage Box](https://www.hetzner.com/storage/
 - 🔒 **Secure** - Bearer token authentication
 
 ### Why this exporter?
-
-The existing [fleaz/prometheus-storagebox-exporter](https://github.com/fleaz/prometheus-storagebox-exporter) uses the deprecated Robot API which will be sunset in **July 2025**. This exporter:
+=
+This exporter:
 
 - Uses the modern Hetzner API that won't be deprecated
 - Provides 4x more metrics including access settings and protection status
@@ -57,15 +57,6 @@ You need a Hetzner API token with read permissions:
 
 ### Docker Compose (Recommended)
 
-Create a `.env` file:
-
-```bash
-# Copy the example
-cp .env.example .env
-
-# Edit and add your token
-nano .env
-```
 
 ```bash
 docker-compose up -d
@@ -96,6 +87,34 @@ export HETZNER_TOKEN="your-api-token"
 ### Access Metrics
 
 Open http://localhost:9509/metrics to view the exported metrics.
+
+---
+
+---
+
+## ⚙️ Configuration
+
+### Environment Variables
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `HETZNER_TOKEN` | *required* | Hetzner API token |
+| `LISTEN_ADDRESS` | `:9509` | Address to listen on |
+| `METRICS_PATH` | `/metrics` | Path for metrics endpoint |
+| `LOG_LEVEL` | `info` | Log level (debug, info, warn, error) |
+
+### Command-line Flags
+
+```bash
+./prometheus-storagebox-exporter --help
+
+Flags:
+  --hetzner-token string     Hetzner API token (can also be set via HETZNER_TOKEN env var)
+  --listen-address string    Address to listen on for HTTP requests (default ":9509")
+  --metrics-path string      Path under which to expose metrics (default "/metrics")
+  --log-level string         Log level (debug, info, warn, error) (default "info")
+  --version                  Show version information and exit
+```
 
 ---
 
@@ -164,9 +183,9 @@ A comprehensive Grafana dashboard is included with 21 panels:
 - **🛡️ Configuration Info**: Snapshot plan and delete protection status
 - **📊 Multi-box Support**: Variable to filter by specific storage box or view all
 
-### Quick Setup with Docker Compose
+### Quick test with Docker Compose
 
-The repository includes a complete Docker Compose setup with:
+The repository includes a complete Docker Compose test with:
 
 ```bash
 # Start all services (Exporter + Prometheus + Grafana)
@@ -180,13 +199,6 @@ Access points:
 - 🎯 **Grafana Dashboard**: http://localhost:3000 (admin/admin)
 - 📈 **Prometheus**: http://localhost:9090
 - 🔧 **Exporter**: http://localhost:9509/metrics
-
-### Import Manually
-
-1. Open Grafana → **Dashboards** → **Import**
-2. Upload `grafana-provisioning/dashboards/grafana-dashboard.json`
-3. Select your Prometheus data source
-4. Click **Import**
 
 ### Dashboard Panels
 
@@ -232,33 +244,7 @@ The dashboard includes:
 **Details Table:**
 - Storage Box Details (comprehensive table)
 
----
 
-## ⚙️ Configuration
-
-### Environment Variables
-
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `HETZNER_TOKEN` | *required* | Hetzner API token |
-| `LISTEN_ADDRESS` | `:9509` | Address to listen on |
-| `METRICS_PATH` | `/metrics` | Path for metrics endpoint |
-| `LOG_LEVEL` | `info` | Log level (debug, info, warn, error) |
-
-### Command-line Flags
-
-```bash
-./prometheus-storagebox-exporter --help
-
-Flags:
-  --hetzner-token string     Hetzner API token (can also be set via HETZNER_TOKEN env var)
-  --listen-address string    Address to listen on for HTTP requests (default ":9509")
-  --metrics-path string      Path under which to expose metrics (default "/metrics")
-  --log-level string         Log level (debug, info, warn, error) (default "info")
-  --version                  Show version information and exit
-```
-
----
 
 ## 🐳 Docker Deployment
 
@@ -500,40 +486,6 @@ golangci-lint run
 └── DESIGN.md             # Architecture documentation
 ```
 
-### Creating a Release
-
-```bash
-# Tag a new version
-git tag -a v1.0.0 -m "Release v1.0.0"
-git push origin v1.0.0
-
-# GitHub Actions will automatically:
-# - Build binaries for all platforms
-# - Create Docker images (amd64, arm64)
-# - Publish to GitHub Container Registry
-# - Create a GitHub release with artifacts
-```
-
----
-
-## 🆚 Comparison
-
-| Feature | This Exporter | Reference Implementation |
-|---------|---------------|-------------------------|
-| **API Version** | Modern Hetzner API (api.hetzner.com) | Deprecated Robot API |
-| **Authentication** | Bearer token | Basic auth (user/pass) |
-| **API Sunset** | Never | July 2025 ⚠️ |
-| **Metrics Count** | 15+ metrics | 4 metrics |
-| **Storage Types** | Quota, Usage, Data, Snapshots | Usage only |
-| **Access Settings** | SSH, Samba, WebDAV, ZFS, External | None |
-| **Protection Info** | Delete protection, Snapshot plan | None |
-| **Docker Images** | amd64, arm64, arm/v7 | amd64 only |
-| **Grafana Dashboard** | Included (21 panels) | Not included |
-| **Info Metrics** | Yes (with rich labels) | No |
-| **CI/CD** | GitHub Actions + goreleaser | Not included |
-| **Health Checks** | /health endpoint | Not included |
-
----
 
 ## 🐛 Troubleshooting
 
@@ -640,6 +592,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 **⭐ If this project helped you, consider giving it a star!**
 
-Made with ❤️ for the Prometheus and Hetzner communities
+Made with ❤️ for the Prometheus and Hetzner communities from 🇪🇸
 
 </div>
