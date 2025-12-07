@@ -56,7 +56,10 @@ func main() {
 	// Health check endpoint
 	mux.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
-		_, _ = w.Write([]byte("OK"))
+		if _, err := w.Write([]byte("OK")); err != nil {
+			// Log the error but don't fail the health check
+			log.Printf("Failed to write health check response: %v", err)
+		}
 	})
 
 	// Landing page

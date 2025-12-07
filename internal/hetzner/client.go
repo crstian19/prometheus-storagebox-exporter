@@ -34,20 +34,20 @@ func NewClient(token string) *Client {
 
 // StorageBox represents a Hetzner Storage Box
 type StorageBox struct {
-	ID             int64          `json:"id"`
-	Name           string         `json:"name"`
-	Username       string         `json:"username"`
-	Status         string         `json:"status"`
-	Server         string         `json:"server"`
-	System         string         `json:"system"`
-	StorageBoxType StorageBoxType `json:"storage_box_type"`
-	Location       Location       `json:"location"`
-	Stats          Stats          `json:"stats"`
-	AccessSettings AccessSettings `json:"access_settings"`
-	SnapshotPlan   *SnapshotPlan  `json:"snapshot_plan"`
-	Protection     Protection     `json:"protection"`
+	ID             int64             `json:"id"`
+	Name           string            `json:"name"`
+	Username       string            `json:"username"`
+	Status         string            `json:"status"`
+	Server         string            `json:"server"`
+	System         string            `json:"system"`
+	StorageBoxType StorageBoxType    `json:"storage_box_type"`
+	Location       Location          `json:"location"`
+	Stats          Stats             `json:"stats"`
+	AccessSettings AccessSettings    `json:"access_settings"`
+	SnapshotPlan   *SnapshotPlan     `json:"snapshot_plan"`
+	Protection     Protection        `json:"protection"`
 	Labels         map[string]string `json:"labels"`
-	Created        time.Time      `json:"created"`
+	Created        time.Time         `json:"created"`
 }
 
 // Location represents the data center location
@@ -73,10 +73,10 @@ type Stats struct {
 
 // AccessSettings represents the access configuration
 type AccessSettings struct {
-	SSH               bool `json:"ssh_enabled"`        // SSH access enabled
-	Samba             bool `json:"samba_enabled"`      // Samba access enabled
-	WebDAV            bool `json:"webdav_enabled"`     // WebDAV access enabled
-	ZFS               bool `json:"zfs_enabled"`        // ZFS access enabled
+	SSH                 bool `json:"ssh_enabled"`          // SSH access enabled
+	Samba               bool `json:"samba_enabled"`        // Samba access enabled
+	WebDAV              bool `json:"webdav_enabled"`       // WebDAV access enabled
+	ZFS                 bool `json:"zfs_enabled"`          // ZFS access enabled
 	ReachableExternally bool `json:"reachable_externally"` // Storage box reachable externally
 }
 

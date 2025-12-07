@@ -33,8 +33,8 @@ type StorageBoxCollector struct {
 	createdTimestamp  *prometheus.Desc
 
 	// Exporter metrics
-	scrapeDuration    *prometheus.Desc
-	scrapeErrors      prometheus.Counter
+	scrapeDuration *prometheus.Desc
+	scrapeErrors   prometheus.Counter
 }
 
 // NewStorageBoxCollector creates a new StorageBoxCollector
