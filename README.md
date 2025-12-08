@@ -6,13 +6,12 @@
 
 **Modern Prometheus exporter for Hetzner Storage Box with comprehensive metrics**
 
-![CI](https://img.shields.io/github/actions/workflow/status/crstian19/prometheus-storagebox-exporter/CI?label=CI&logo=github&style=flat-square)
-![Go Report Card](https://goreportcard.com/badge/github.com/crstian19/prometheus-storagebox-exporter?style=flat-square)
-![License](https://img.shields.io/github/license/crstian19/prometheus-storagebox-exporter?style=flat-square)
-![Docker Image Size](https://img.shields.io/docker/image-size/ghcr.io/crstian19/prometheus-storagebox-exporter/latest?style=flat-square&logo=docker)
-![Docker Pulls](https://img.shields.io/docker/pulls/ghcr.io/crstian19/prometheus-storagebox-exporter?style=flat-square&logo=docker)
-![GitHub Release](https://img.shields.io/github/v/release/crstian19/prometheus-storagebox-exporter?style=flat-square&logo=github)
-![Go Version](https://img.shields.io/github/go-mod/go-version/crstian19/prometheus-storagebox-exporter?style=flat-square&logo=go)
+![CI](https://img.shields.io/github/actions/workflow/status/crstian19/prometheus-storagebox-exporter/ci.yml?label=CI&logo=github&logoColor=white&style=for-the-badge&branch=main)
+![Go Report Card](https://goreportcard.com/badge/github.com/crstian19/prometheus-storagebox-exporter?style=for-the-badge&logo=go&logoColor=white)
+![License](https://img.shields.io/github/license/crstian19/prometheus-storagebox-exporter?style=for-the-badge&logo=unlicense&logoColor=white)
+![Docker](https://img.shields.io/badge/docker-ghcr.io-blue?style=for-the-badge&logo=docker&logoColor=white)
+![GitHub Release](https://img.shields.io/github/release/crstian19/prometheus-storagebox-exporter?style=for-the-badge&logo=github&logoColor=white&label=release)
+![Go Version](https://img.shields.io/github/go-mod/go-version/crstian19/prometheus-storagebox-exporter?style=for-the-badge&logo=go&logoColor=white&label=go)
 
 [Quick Start](#-quick-start) • [Metrics](#-metrics) • [Installation](#-installation) • [Grafana Dashboard](#-grafana-dashboard) • [Configuration](#%EF%B8%8F-configuration)
 
@@ -33,7 +32,7 @@ A Prometheus exporter for [Hetzner Storage Box](https://www.hetzner.com/storage/
 - 🔒 **Secure** - Bearer token authentication
 
 ### Why this exporter?
-=
+
 This exporter:
 
 - Uses the modern Hetzner API that won't be deprecated
@@ -169,6 +168,8 @@ The exporter exposes 15+ metrics organized in 4 categories:
 ## 📈 Grafana Dashboard
 
 A comprehensive Grafana dashboard is included with 21 panels:
+
+
 
 ### Dashboard Features
 
