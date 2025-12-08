@@ -4,6 +4,8 @@ on:
   push:
     branches:
       - main
+    tags:
+      - 'v*'
   pull_request:
     branches:
       - main
@@ -117,5 +119,6 @@ jobs:
           tags: |
             ghcr.io/crstian19/prometheus-storagebox-exporter:ci-${{ github.sha }}
             ghcr.io/crstian19/prometheus-storagebox-exporter:latest
+            ${{ github.ref_type == 'tag' && format('ghcr.io/crstian19/prometheus-storagebox-exporter:{0}', github.ref_name) || '' }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
