@@ -41,6 +41,16 @@ This exporter:
 - Includes a comprehensive Grafana dashboard
 - Is actively maintained with CI/CD automation
 
+### 📊 Dashboard Preview
+
+<div align="center">
+
+<img src="https://cdn.crstian.me/storage-exporter-dashboard-1.png" alt="Dashboard Overview" width="800">
+
+<img src="https://cdn.crstian.me/storage-exporter-dashboard-2.png" alt="Dashboard Details" width="800">
+
+</div>
+
 ---
 
 ## 🚀 Quick Start
