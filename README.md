@@ -587,12 +587,20 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - **Security**: [Report a vulnerability](https://github.com/crstian19/prometheus-storagebox-exporter/security)
 - **Documentation**: [DESIGN.md](DESIGN.md) for architecture details
 
+## 💝 Donate
+
+If you find this project useful and want to support its development, you can donate via PayPal:
+
+[![Donate with PayPal](https://raw.githubusercontent.com/stefan-niedermann/paypal-donate-button/master/paypal-donate-button.png)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=MUW2XFMQB2782)
+
+Your support helps keep this project maintained and improved! 🙏
+
 ---
 
 <div align="center">
 
 **⭐ If this project helped you, consider giving it a star!**
 
-Made with ❤️ for the Prometheus and Hetzner communities from 🇪🇸
+Made with ❤️ from 🇪🇸 for the Prometheus and Hetzner communities
 
 </div>
