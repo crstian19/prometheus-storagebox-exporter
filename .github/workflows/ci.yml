@@ -97,6 +97,7 @@ jobs:
   docker:
     name: Docker Build
     runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/v')
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -117,8 +118,7 @@ jobs:
           context: .
           push: true
           tags: |
-            ghcr.io/crstian19/prometheus-storagebox-exporter:ci-${{ github.sha }}
             ghcr.io/crstian19/prometheus-storagebox-exporter:latest
-            ${{ github.ref_type == 'tag' && format('ghcr.io/crstian19/prometheus-storagebox-exporter:{0}', github.ref_name) || '' }}
+            ghcr.io/crstian19/prometheus-storagebox-exporter:${{ github.ref_name }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
