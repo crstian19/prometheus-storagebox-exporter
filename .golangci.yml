@@ -6,7 +6,6 @@ run:
   go: '1.25.5'
 
 linters:
-  disable-all: true
   enable:
     - errcheck
     - gofmt
@@ -17,14 +16,3 @@ linters:
     - staticcheck
     - unconvert
     - unused
-
-linters-settings:
-  govet:
-    disable:
-      - fieldalignment
-
-issues:
-  exclude-rules:
-    - path: _test\.go
-      linters:
-        - errcheck
