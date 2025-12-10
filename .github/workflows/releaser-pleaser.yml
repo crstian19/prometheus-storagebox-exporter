@@ -1,0 +1,36 @@
+name: Releaser Pleaser
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    types:
+      - edited
+      - labeled
+
+# Prevent concurrent runs to avoid race conditions when PR descriptions are updated
+concurrency:
+  group: releaser-pleaser
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  releaser-pleaser:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Run Releaser Pleaser
+        uses: apricote/releaser-pleaser@v0.7.1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          extra-files: |
+            Dockerfile
+            docker-compose.dev.yml
