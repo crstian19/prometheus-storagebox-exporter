@@ -1,7 +1,9 @@
+version: "2"
+
 run:
   timeout: 5m
   tests: true
-  go: '1.23.5'
+  go: '1.25.5'
 
 linters:
   disable-all: true
