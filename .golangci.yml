@@ -3,16 +3,18 @@ version: "2"
 run:
   timeout: 5m
   tests: true
-  go: '1.25.5'
 
 linters:
   enable:
     - errcheck
-    - gofmt
-    - goimports
     - govet
     - ineffassign
     - misspell
     - staticcheck
     - unconvert
     - unused
+
+formatters:
+  enable:
+    - gofmt
+    - goimports
