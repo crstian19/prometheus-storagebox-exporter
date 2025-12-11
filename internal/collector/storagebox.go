@@ -6,13 +6,16 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/crstian19/prometheus-storagebox-exporter/internal/cache"
 	"github.com/crstian19/prometheus-storagebox-exporter/internal/hetzner"
 	"github.com/prometheus/client_golang/prometheus"
 )
 
 // StorageBoxCollector implements the prometheus.Collector interface
 type StorageBoxCollector struct {
-	client *hetzner.Client
+	client       *hetzner.Client
+	cache        *cache.MetricsCache
+	cacheEnabled bool
 
 	// Core storage metrics
 	diskQuota          *prometheus.Desc
@@ -35,12 +38,17 @@ type StorageBoxCollector struct {
 	// Exporter metrics
 	scrapeDuration *prometheus.Desc
 	scrapeErrors   prometheus.Counter
+	cacheHits      prometheus.Counter
+	cacheMisses    prometheus.Counter
 }
 
 // NewStorageBoxCollector creates a new StorageBoxCollector
-func NewStorageBoxCollector(client *hetzner.Client) *StorageBoxCollector {
+func NewStorageBoxCollector(client *hetzner.Client, cacheTTL time.Duration, cacheMaxSize int64, cacheCleanupInterval time.Duration) *StorageBoxCollector {
+	cacheEnabled := cacheTTL > 0
 	return &StorageBoxCollector{
-		client: client,
+		client:       client,
+		cache:        cache.NewMetricsCache(cacheTTL, cacheMaxSize, cacheCleanupInterval),
+		cacheEnabled: cacheEnabled,
 
 		// Core storage metrics
 		diskQuota: prometheus.NewDesc(
@@ -141,6 +149,14 @@ func NewStorageBoxCollector(client *hetzner.Client) *StorageBoxCollector {
 			Name: "storagebox_exporter_scrape_errors_total",
 			Help: "Total number of scrape errors",
 		}),
+		cacheHits: prometheus.NewCounter(prometheus.CounterOpts{
+			Name: "storagebox_exporter_cache_hits_total",
+			Help: "Total number of cache hits",
+		}),
+		cacheMisses: prometheus.NewCounter(prometheus.CounterOpts{
+			Name: "storagebox_exporter_cache_misses_total",
+			Help: "Total number of cache misses",
+		}),
 	}
 }
 
@@ -160,21 +176,58 @@ func (c *StorageBoxCollector) Describe(ch chan<- *prometheus.Desc) {
 	ch <- c.createdTimestamp
 	ch <- c.scrapeDuration
 	c.scrapeErrors.Describe(ch)
+	c.cacheHits.Describe(ch)
+	c.cacheMisses.Describe(ch)
 }
 
 // Collect implements prometheus.Collector
 func (c *StorageBoxCollector) Collect(ch chan<- prometheus.Metric) {
 	start := time.Now()
 
-	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
-	defer cancel()
+	var boxes []hetzner.StorageBox
 
-	boxes, err := c.client.ListStorageBoxes(ctx)
-	if err != nil {
-		log.Printf("Error fetching storage boxes: %v", err)
-		c.scrapeErrors.Inc()
-		c.scrapeErrors.Collect(ch)
-		return
+	// Try to get data from cache first (only if cache is enabled)
+	if c.cacheEnabled {
+		if cachedData, found := c.cache.Get(); found {
+			c.cacheHits.Inc()
+			boxes = cachedData.([]hetzner.StorageBox)
+		} else {
+			// Cache miss - fetch from API
+			c.cacheMisses.Inc()
+
+			ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+			defer cancel()
+
+			fetchedBoxes, err := c.client.ListStorageBoxes(ctx)
+			if err != nil {
+				log.Printf("Error fetching storage boxes: %v", err)
+				c.scrapeErrors.Inc()
+				c.scrapeErrors.Collect(ch)
+				c.cacheHits.Collect(ch)
+				c.cacheMisses.Collect(ch)
+				return
+			}
+
+			boxes = fetchedBoxes
+			// Store in cache
+			c.cache.Set(boxes)
+		}
+	} else {
+		// Cache disabled - always fetch from API
+		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+		defer cancel()
+
+		fetchedBoxes, err := c.client.ListStorageBoxes(ctx)
+		if err != nil {
+			log.Printf("Error fetching storage boxes: %v", err)
+			c.scrapeErrors.Inc()
+			c.scrapeErrors.Collect(ch)
+			c.cacheHits.Collect(ch)
+			c.cacheMisses.Collect(ch)
+			return
+		}
+
+		boxes = fetchedBoxes
 	}
 
 	for _, box := range boxes {
@@ -190,6 +243,8 @@ func (c *StorageBoxCollector) Collect(ch chan<- prometheus.Metric) {
 	)
 
 	c.scrapeErrors.Collect(ch)
+	c.cacheHits.Collect(ch)
+	c.cacheMisses.Collect(ch)
 }
 
 // collectStorageBox collects metrics for a single storage box

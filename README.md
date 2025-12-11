@@ -111,6 +111,10 @@ Open http://localhost:9509/metrics to view the exported metrics.
 | `LISTEN_ADDRESS` | `:9509` | Address to listen on |
 | `METRICS_PATH` | `/metrics` | Path for metrics endpoint |
 | `LOG_LEVEL` | `info` | Log level (debug, info, warn, error) |
+| `CACHE_TTL` | `0` | Cache TTL in seconds, 0 to disable (default: disabled) |
+| `CACHE_MAX_SIZE` | `0` | Cache maximum size in bytes, 0 for unlimited |
+| `CACHE_CLEANUP_INTERVAL` | `0` | Cache cleanup interval in seconds, 0 for 10s default |
+| `CACHE_STORAGE_TYPE` | `memory` | Cache storage type (memory, redis) |
 
 ### Command-line Flags
 
@@ -118,11 +122,54 @@ Open http://localhost:9509/metrics to view the exported metrics.
 ./prometheus-storagebox-exporter --help
 
 Flags:
-  --hetzner-token string     Hetzner API token (can also be set via HETZNER_TOKEN env var)
-  --listen-address string    Address to listen on for HTTP requests (default ":9509")
-  --metrics-path string      Path under which to expose metrics (default "/metrics")
-  --log-level string         Log level (debug, info, warn, error) (default "info")
-  --version                  Show version information and exit
+  --hetzner-token string           Hetzner API token (can also be set via HETZNER_TOKEN env var)
+  --listen-address string          Address to listen on for HTTP requests (default ":9509")
+  --metrics-path string            Path under which to expose metrics (default "/metrics")
+  --log-level string               Log level (debug, info, warn, error) (default "info")
+  --cache-ttl int                  Cache TTL in seconds, 0 to disable (can also be set via CACHE_TTL env var, default: 0 - disabled)
+  --cache-max-size int64           Cache maximum size in bytes, 0 for unlimited (can also be set via CACHE_MAX_SIZE env var, default: 0 - unlimited)
+  --cache-cleanup-interval int     Cache cleanup interval in seconds, 0 for default (can also be set via CACHE_CLEANUP_INTERVAL env var, default: 0 - 10s)
+  --cache-storage-type string      Cache storage type (memory, redis) (can also be set via CACHE_STORAGE_TYPE env var, default: memory)
+  --version                        Show version information and exit
+```
+
+### Cache Configuration (Optional)
+
+> ⚠️ **Cache is disabled by default** following Prometheus best practices. Use `scrape_interval` in Prometheus instead of caching for most use cases.
+
+#### When to Enable Cache
+
+- **Multiple Prometheus instances**: Prevent duplicate API calls
+- **Rate limiting concerns**: Reduce API request frequency
+- **Development/Testing**: Minimize API calls during testing
+
+#### Cache Configuration Examples
+
+```bash
+# Enable cache with 60s TTL, 1MB size limit
+export CACHE_TTL=60
+export CACHE_MAX_SIZE=1048576
+export CACHE_CLEANUP_INTERVAL=30
+
+# Enable with memory limit only (10s cleanup interval)
+export CACHE_TTL=120
+export CACHE_MAX_SIZE=5242880
+
+# Enable with custom cleanup interval
+export CACHE_TTL=300
+export CACHE_CLEANUP_INTERVAL=60
+```
+
+#### Prometheus Configuration (Recommended Alternative)
+
+```yaml
+# prometheus.yml
+scrape_configs:
+  - job_name: 'storagebox-exporter'
+    scrape_interval: 5m    # Control scraping frequency
+    scrape_timeout: 30s
+    static_configs:
+      - targets: ['localhost:9509']
 ```
 
 ---
@@ -172,6 +219,8 @@ The exporter exposes 15+ metrics organized in 4 categories:
 | `storagebox_exporter_scrape_duration_seconds` | Gauge | Duration of the scrape in seconds |
 | `storagebox_exporter_scrape_errors_total` | Counter | Total number of scrape errors |
 | `storagebox_exporter_up` | Gauge | Exporter health status (1=healthy, 0=unhealthy) |
+| `storagebox_exporter_cache_hits_total` | Counter | Total number of cache hits (0 when cache disabled) |
+| `storagebox_exporter_cache_misses_total` | Counter | Total number of cache misses (increments every scrape when cache disabled) |
 
 ---
 
@@ -279,6 +328,10 @@ services:
       - "9509:9509"
     environment:
       - HETZNER_TOKEN=${HETZNER_TOKEN}
+      # Optional cache configuration (uncomment to enable)
+      # - CACHE_TTL=60
+      # - CACHE_MAX_SIZE=1048576
+      # - CACHE_CLEANUP_INTERVAL=30
     networks:
       - monitoring
 
