@@ -43,11 +43,11 @@ type StorageBoxCollector struct {
 	cacheMisses    prometheus.Counter
 
 	// Error type metrics
-	authErrors        prometheus.Counter
-	rateLimitErrors   prometheus.Counter
-	serverErrors      prometheus.Counter
-	clientErrors      prometheus.Counter
-	networkErrors     prometheus.Counter
+	authErrors      prometheus.Counter
+	rateLimitErrors prometheus.Counter
+	serverErrors    prometheus.Counter
+	clientErrors    prometheus.Counter
+	networkErrors   prometheus.Counter
 }
 
 // NewStorageBoxCollector creates a new StorageBoxCollector
