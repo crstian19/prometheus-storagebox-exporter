@@ -116,11 +116,35 @@ func (c *Client) ListStorageBoxes(ctx context.Context) ([]StorageBox, error) {
 	}()
 
 	if resp.StatusCode != http.StatusOK {
+		// Extract request ID from response headers if available
+		requestID := resp.Header.Get("X-Request-Id")
+		if requestID == "" {
+			requestID = resp.Header.Get("X-Amzn-Requestid") // Alternative header
+		}
+
 		body, err := io.ReadAll(resp.Body)
 		if err != nil {
-			return nil, fmt.Errorf("API request failed with status %d: failed to read response body: %w", resp.StatusCode, err)
+			return nil, NewAPIErrorWithWrap(resp.StatusCode, "API request failed: failed to read response body", requestID, err)
 		}
-		return nil, fmt.Errorf("API request failed with status %d: %s", resp.StatusCode, string(body))
+
+		// Try to parse JSON error message from Hetzner API
+		var errorResponse struct {
+			Error struct {
+				Message string `json:"message"`
+				Code    string `json:"code"`
+			} `json:"error"`
+		}
+
+		message := fmt.Sprintf("HTTP %d error", resp.StatusCode)
+		if len(body) > 0 {
+			if json.Unmarshal(body, &errorResponse) == nil && errorResponse.Error.Message != "" {
+				message = errorResponse.Error.Message
+			} else {
+				message = string(body)
+			}
+		}
+
+		return nil, NewAPIError(resp.StatusCode, message, requestID)
 	}
 
 	var result storageBoxesResponse
