@@ -3,7 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
-	"log"
+	"log/slog"
 	"net/http"
 	"os"
 	"os/signal"
@@ -28,8 +28,16 @@ func main() {
 	// Load configuration
 	cfg, err := config.Load()
 	if err != nil {
-		log.Fatalf("Error loading configuration: %v", err)
+		slog.Error("Failed to load configuration", "error", err)
+		os.Exit(1)
 	}
+
+	// Initialize structured logger with JSON output
+	logLevel := parseLogLevel(cfg.LogLevel)
+	logger := slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
+		Level: logLevel,
+	}))
+	slog.SetDefault(logger)
 
 	// Show version and exit if requested
 	if cfg.ShowVersion {
@@ -58,7 +66,7 @@ func main() {
 		w.WriteHeader(http.StatusOK)
 		if _, err := w.Write([]byte("OK")); err != nil {
 			// Log the error but don't fail the health check
-			log.Printf("Failed to write health check response: %v", err)
+			slog.Warn("Failed to write health check response", "error", err)
 		}
 	})
 
@@ -122,23 +130,45 @@ func main() {
 	signal.Notify(stop, os.Interrupt, syscall.SIGTERM)
 
 	go func() {
-		log.Printf("Starting prometheus-storagebox-exporter version %s", Version)
-		log.Printf("Listening on %s", cfg.ListenAddress)
-		log.Printf("Metrics available at %s", cfg.MetricsPath)
+		slog.Info("Starting prometheus-storagebox-exporter",
+			"version", Version,
+			"git_commit", GitCommit,
+			"build_date", BuildDate,
+			"listen_address", cfg.ListenAddress,
+			"metrics_path", cfg.MetricsPath,
+			"log_level", cfg.LogLevel,
+		)
 		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			log.Fatalf("Error starting HTTP server: %v", err)
+			slog.Error("HTTP server failed", "error", err)
+			os.Exit(1)
 		}
 	}()
 
 	<-stop
 
-	log.Println("Shutting down gracefully...")
+	slog.Info("Shutting down gracefully")
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
 	if err := server.Shutdown(ctx); err != nil {
-		log.Printf("Error during shutdown: %v", err)
+		slog.Error("Error during shutdown", "error", err)
 	}
 
-	log.Println("Exporter stopped")
+	slog.Info("Exporter stopped")
+}
+
+// parseLogLevel converts a string log level to slog.Level
+func parseLogLevel(level string) slog.Level {
+	switch level {
+	case "debug":
+		return slog.LevelDebug
+	case "info":
+		return slog.LevelInfo
+	case "warn":
+		return slog.LevelWarn
+	case "error":
+		return slog.LevelError
+	default:
+		return slog.LevelInfo
+	}
 }

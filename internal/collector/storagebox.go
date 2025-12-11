@@ -2,7 +2,7 @@ package collector
 
 import (
 	"context"
-	"log"
+	"log/slog"
 	"strconv"
 	"time"
 
@@ -171,7 +171,10 @@ func (c *StorageBoxCollector) Collect(ch chan<- prometheus.Metric) {
 
 	boxes, err := c.client.ListStorageBoxes(ctx)
 	if err != nil {
-		log.Printf("Error fetching storage boxes: %v", err)
+		slog.Error("Failed to fetch storage boxes from Hetzner API",
+			"error", err,
+			"timeout", "30s",
+		)
 		c.scrapeErrors.Inc()
 		c.scrapeErrors.Collect(ch)
 		return
