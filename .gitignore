@@ -45,3 +45,9 @@ prometheus-storagebox-exporter
 # Local testing volumes
 grafana-data/
 prometheus-data/
+
+# Claude documentation (development-only)
+Claude.md
+
+# CommitSage configuration (development-only)
+.commitsage
