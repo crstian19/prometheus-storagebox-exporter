@@ -7,23 +7,23 @@ import (
 
 // MetricsCache is a thread-safe cache for storing metrics data with TTL
 type MetricsCache struct {
-	mu               sync.RWMutex
-	data             interface{}
-	expiration       time.Time
-	ttl              time.Duration
-	maxSize          int64
-	currentSize      int64
-	cleanupInterval  time.Duration
-	lastCleanup      time.Time
+	mu              sync.RWMutex
+	data            interface{}
+	expiration      time.Time
+	ttl             time.Duration
+	maxSize         int64
+	currentSize     int64
+	cleanupInterval time.Duration
+	lastCleanup     time.Time
 }
 
 // NewMetricsCache creates a new cache instance with the specified configuration
 func NewMetricsCache(ttl time.Duration, maxSize int64, cleanupInterval time.Duration) *MetricsCache {
 	return &MetricsCache{
-		ttl:              ttl,
-		maxSize:          maxSize,
-		cleanupInterval:  cleanupInterval,
-		lastCleanup:      time.Now(),
+		ttl:             ttl,
+		maxSize:         maxSize,
+		cleanupInterval: cleanupInterval,
+		lastCleanup:     time.Now(),
 	}
 }
 

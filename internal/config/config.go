@@ -11,15 +11,15 @@ import (
 
 // Config holds the application configuration
 type Config struct {
-	HetznerToken          string
-	ListenAddress         string
-	MetricsPath           string
-	LogLevel              string
-	CacheTTL              time.Duration
-	CacheMaxSize          int64
-	CacheCleanupInterval  time.Duration
-	CacheStorageType      string
-	ShowVersion           bool
+	HetznerToken         string
+	ListenAddress        string
+	MetricsPath          string
+	LogLevel             string
+	CacheTTL             time.Duration
+	CacheMaxSize         int64
+	CacheCleanupInterval time.Duration
+	CacheStorageType     string
+	ShowVersion          bool
 }
 
 // Load parses configuration from environment variables and command-line flags

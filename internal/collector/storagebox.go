@@ -3,6 +3,7 @@ package collector
 import (
 	"context"
 	"log/slog"
+	"net/http"
 	"strconv"
 	"time"
 
@@ -40,6 +41,13 @@ type StorageBoxCollector struct {
 	scrapeErrors   prometheus.Counter
 	cacheHits      prometheus.Counter
 	cacheMisses    prometheus.Counter
+
+	// Error type metrics
+	authErrors      prometheus.Counter
+	rateLimitErrors prometheus.Counter
+	serverErrors    prometheus.Counter
+	clientErrors    prometheus.Counter
+	networkErrors   prometheus.Counter
 }
 
 // NewStorageBoxCollector creates a new StorageBoxCollector
@@ -157,6 +165,28 @@ func NewStorageBoxCollector(client *hetzner.Client, cacheTTL time.Duration, cach
 			Name: "storagebox_exporter_cache_misses_total",
 			Help: "Total number of cache misses",
 		}),
+
+		// Error type counters
+		authErrors: prometheus.NewCounter(prometheus.CounterOpts{
+			Name: "storagebox_exporter_auth_errors_total",
+			Help: "Total number of authentication/authorization errors (401, 403)",
+		}),
+		rateLimitErrors: prometheus.NewCounter(prometheus.CounterOpts{
+			Name: "storagebox_exporter_rate_limit_errors_total",
+			Help: "Total number of rate limit errors (429)",
+		}),
+		serverErrors: prometheus.NewCounter(prometheus.CounterOpts{
+			Name: "storagebox_exporter_server_errors_total",
+			Help: "Total number of server errors (5xx)",
+		}),
+		clientErrors: prometheus.NewCounter(prometheus.CounterOpts{
+			Name: "storagebox_exporter_client_errors_total",
+			Help: "Total number of client errors (400, 404)",
+		}),
+		networkErrors: prometheus.NewCounter(prometheus.CounterOpts{
+			Name: "storagebox_exporter_network_errors_total",
+			Help: "Total number of network/connection errors",
+		}),
 	}
 }
 
@@ -178,6 +208,11 @@ func (c *StorageBoxCollector) Describe(ch chan<- *prometheus.Desc) {
 	c.scrapeErrors.Describe(ch)
 	c.cacheHits.Describe(ch)
 	c.cacheMisses.Describe(ch)
+	c.authErrors.Describe(ch)
+	c.rateLimitErrors.Describe(ch)
+	c.serverErrors.Describe(ch)
+	c.clientErrors.Describe(ch)
+	c.networkErrors.Describe(ch)
 }
 
 // Collect implements prometheus.Collector
@@ -200,15 +235,16 @@ func (c *StorageBoxCollector) Collect(ch chan<- prometheus.Metric) {
 
 			fetchedBoxes, err := c.client.ListStorageBoxes(ctx)
 			if err != nil {
-				slog.Error("Failed to fetch storage boxes from Hetzner API",
-					"error", err,
-					"timeout", "30s",
-					"source", "cache_miss",
-				)
+				c.handleError(err, "cache_miss")
 				c.scrapeErrors.Inc()
 				c.scrapeErrors.Collect(ch)
 				c.cacheHits.Collect(ch)
 				c.cacheMisses.Collect(ch)
+				c.authErrors.Collect(ch)
+				c.rateLimitErrors.Collect(ch)
+				c.serverErrors.Collect(ch)
+				c.clientErrors.Collect(ch)
+				c.networkErrors.Collect(ch)
 				return
 			}
 
@@ -223,15 +259,16 @@ func (c *StorageBoxCollector) Collect(ch chan<- prometheus.Metric) {
 
 		fetchedBoxes, err := c.client.ListStorageBoxes(ctx)
 		if err != nil {
-			slog.Error("Failed to fetch storage boxes from Hetzner API",
-				"error", err,
-				"timeout", "30s",
-				"source", "direct_api_call",
-			)
+			c.handleError(err, "direct_api_call")
 			c.scrapeErrors.Inc()
 			c.scrapeErrors.Collect(ch)
 			c.cacheHits.Collect(ch)
 			c.cacheMisses.Collect(ch)
+			c.authErrors.Collect(ch)
+			c.rateLimitErrors.Collect(ch)
+			c.serverErrors.Collect(ch)
+			c.clientErrors.Collect(ch)
+			c.networkErrors.Collect(ch)
 			return
 		}
 
@@ -253,6 +290,11 @@ func (c *StorageBoxCollector) Collect(ch chan<- prometheus.Metric) {
 	c.scrapeErrors.Collect(ch)
 	c.cacheHits.Collect(ch)
 	c.cacheMisses.Collect(ch)
+	c.authErrors.Collect(ch)
+	c.rateLimitErrors.Collect(ch)
+	c.serverErrors.Collect(ch)
+	c.clientErrors.Collect(ch)
+	c.networkErrors.Collect(ch)
 }
 
 // collectStorageBox collects metrics for a single storage box
@@ -375,6 +417,46 @@ func (c *StorageBoxCollector) collectStorageBox(ch chan<- prometheus.Metric, box
 		float64(box.Created.Unix()),
 		id, name,
 	)
+}
+
+// handleError processes an error and increments the appropriate error counter
+func (c *StorageBoxCollector) handleError(err error, source string) {
+	if hetzner.IsAPIError(err) {
+		apiErr := hetzner.GetAPIError(err)
+
+		// Increment specific error type counters
+		if hetzner.IsAuthError(err) {
+			c.authErrors.Inc()
+		} else if apiErr.StatusCode == http.StatusTooManyRequests {
+			c.rateLimitErrors.Inc()
+		} else if hetzner.IsServerError(err) {
+			c.serverErrors.Inc()
+		} else if hetzner.IsClientError(err) {
+			c.clientErrors.Inc()
+		}
+
+		// Log with structured information
+		slog.Error("Hetzner API error occurred",
+			"error", err,
+			"error_type", http.StatusText(apiErr.StatusCode),
+			"status_code", apiErr.StatusCode,
+			"request_id", apiErr.RequestID,
+			"source", source,
+			"is_retryable", hetzner.IsRetryableError(err),
+			"is_auth_error", hetzner.IsAuthError(err),
+		)
+	} else {
+		// Non-API errors (network, timeouts, etc.)
+		c.networkErrors.Inc()
+		slog.Error("Network or system error occurred",
+			"error", err,
+			"error_type", "network",
+			"source", source,
+		)
+	}
+
+	// Always increment total errors counter
+	c.scrapeErrors.Inc()
 }
 
 // Helper functions
