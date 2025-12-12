@@ -89,7 +89,7 @@ jobs:
           go build -v -ldflags="-w -s" -o dist/prometheus-storagebox-exporter-${{ matrix.goos }}-${{ matrix.goarch }} .
 
       - name: Upload artifacts
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: prometheus-storagebox-exporter-${{ matrix.goos }}-${{ matrix.goarch }}
           path: dist/prometheus-storagebox-exporter-${{ matrix.goos }}-${{ matrix.goarch }}
