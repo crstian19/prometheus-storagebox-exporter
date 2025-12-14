@@ -1,0 +1,26 @@
+# Dockerfile for GoReleaser builds
+# This Dockerfile is used by GoReleaser which pre-builds the binary
+# The binary is already compiled with all necessary flags before Docker build
+
+FROM alpine:latest AS certs
+RUN apk add --no-cache ca-certificates tzdata
+
+FROM scratch
+
+# Copy CA certificates for HTTPS
+COPY --from=certs /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
+
+# Copy timezone data
+COPY --from=certs /usr/share/zoneinfo /usr/share/zoneinfo
+
+# Copy the pre-built binary from GoReleaser
+COPY prometheus-storagebox-exporter /prometheus-storagebox-exporter
+
+# Expose metrics port
+EXPOSE 9509
+
+# Run as non-root user
+USER 65534:65534
+
+# Set entry point
+ENTRYPOINT ["/prometheus-storagebox-exporter"]
