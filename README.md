@@ -79,7 +79,37 @@ docker run -d \
   -p 9509:9509 \
   -e HETZNER_TOKEN="your-api-token" \
   ghcr.io/crstian19/prometheus-storagebox-exporter:latest
+
+# With token file (recommended for NixOS)
+echo "your-api-token" > /run/secrets/hetzner-token
+docker run -d \
+  --name storagebox-exporter \
+  -p 9509:9509 \
+  -v /run/secrets/hetzner-token:/run/secrets/hetzner-token:ro \
+  -e HETZNER_TOKEN_FILE="/run/secrets/hetzner-token" \
+  ghcr.io/crstian19/prometheus-storagebox-exporter:latest
 ```
+
+**🐳 Multi-Architecture Docker Images**
+
+Our Docker images are built for multiple architectures with automatic platform detection:
+
+```bash
+# Automatically pulls the right image for your platform:
+docker pull ghcr.io/crstian19/prometheus-storagebox-exporter:latest
+
+# Available architectures:
+# - Linux amd64 (Intel/AMD)
+# - Linux arm64 (ARM 64-bit)
+# - macOS amd64 (Intel Mac)
+# - macOS arm64 (Apple Silicon)
+```
+
+**🏷️ Available Tags:**
+- `latest` - Latest release (multi-arch)
+- `v0.x.x` - Specific version (multi-arch)
+- `latest-amd64` - Intel/AMD specific
+- `latest-arm64` - ARM specific
 
 ### Binary
 

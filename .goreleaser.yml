@@ -133,26 +133,51 @@ release:
   draft: false
   prerelease: auto
   mode: replace
+  name_template: "{{.ProjectName}} {{.Version}}"
   header: |
-    ## Prometheus Hetzner Storage Box Exporter {{ .Version }}
+    ## Prometheus Hetzner Storage Box Exporter {{.Version}}
 
-    This release includes binaries for Linux, macOS, and Windows, as well as Docker images for amd64 and arm64 architectures.
+    ### 📦 Installation
 
-    ### Docker Images
+    **Binary Download:**
+    Download the appropriate binary for your platform from the assets below.
 
+    **Docker:**
+    Multi-architecture images are available:
     ```bash
-    docker pull ghcr.io/{{ .Env.GITHUB_REPOSITORY_OWNER }}/{{ .ProjectName }}:{{ .Version }}
+    docker pull ghcr.io/{{ .Env.GITHUB_REPOSITORY_OWNER }}/{{ .ProjectName }}:{{.Version}}
+    docker pull ghcr.io/{{ .Env.GITHUB_REPOSITORY_OWNER }}/{{ .ProjectName }}:latest
     ```
 
-  footer: |
-    ## Installation
-
-    ### Binary
-    Download the appropriate binary for your platform from the assets below and extract it.
-
-    ### Docker
+    Run with Docker:
     ```bash
-    docker run -p 9509:9509 -e HETZNER_TOKEN=your-token ghcr.io/{{ .Env.GITHUB_REPOSITORY_OWNER }}/{{ .ProjectName }}:{{ .Version }}
+    docker run -d \
+      --name storagebox-exporter \
+      -p 9509:9509 \
+      -e HETZNER_TOKEN="your-api-token" \
+      ghcr.io/{{ .Env.GITHUB_REPOSITORY_OWNER }}/{{ .ProjectName }}:{{ .Version }}
     ```
+
+    ### 🔧 Configuration
+
+    The exporter supports both environment variables and flags for configuration:
+
+    **Basic usage:**
+    ```bash
+    export HETZNER_TOKEN="your-api-token"
+    ./prometheus-storagebox-exporter
+    ```
+
+    **With file-based token:**
+    ```bash
+    echo "your-api-token" > /run/secrets/hetzner-token
+    export HETZNER_TOKEN_FILE="/run/secrets/hetzner-token"
+    ./prometheus-storagebox-exporter
+    ```
+
+    ### 📚 Documentation
+
+    - [Full Documentation](https://github.com/{{ .Env.GITHUB_REPOSITORY_OWNER }}/{{ .ProjectName }}/blob/main/README.md)
+    - [Configuration Guide](https://github.com/{{ .Env.GITHUB_REPOSITORY_OWNER }}/{{ .ProjectName }}/blob/main/Claude.md)
 
     **Full Changelog**: https://github.com/{{ .Env.GITHUB_REPOSITORY_OWNER }}/{{ .ProjectName }}/compare/{{ .PreviousTag }}...{{ .Tag }}

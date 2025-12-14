@@ -10,7 +10,7 @@ on:
     branches:
       - main
 permissions:
-  contents: read
+  contents: write
   packages: write
 
 jobs:
@@ -94,13 +94,25 @@ jobs:
           name: prometheus-storagebox-exporter-${{ matrix.goos }}-${{ matrix.goarch }}
           path: dist/prometheus-storagebox-exporter-${{ matrix.goos }}-${{ matrix.goarch }}
 
-  docker:
-    name: Docker Build
+  release:
+    name: Release
     runs-on: ubuntu-latest
-    if: startsWith(github.ref, 'refs/tags/v') || github.event_name == 'release'
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: [lint, test]
     steps:
       - name: Checkout code
         uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Set up Go
+        uses: actions/setup-go@v6
+        with:
+          go-version: '1.25.5'
+          cache: true
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -112,13 +124,14 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build and push Docker image
-        uses: docker/build-push-action@v6
+      - name: Run GoReleaser
+        uses: goreleaser/goreleaser-action@v6
         with:
-          context: .
-          push: true
-          tags: |
-            ghcr.io/crstian19/prometheus-storagebox-exporter:latest
-            ghcr.io/crstian19/prometheus-storagebox-exporter:${{ github.ref_name }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          distribution: goreleaser
+          version: latest
+          args: release --clean
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY_OWNER: crstian19
+
+  
