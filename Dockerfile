@@ -1,51 +1,72 @@
-# Multi-stage build for minimal final image
+# ============================================================================
+# Multi-stage Dockerfile for Prometheus Storage Box Exporter
+# ============================================================================
 
-# Stage 1: Build the Go binary
+# ============================================================================
+# Stage 1: Builder - Compile the Go application
+# ============================================================================
 FROM golang:1.25.5-alpine AS builder
 
-# Install build dependencies
-RUN apk add --no-cache git ca-certificates tzdata
+# Install build dependencies (git for go modules, ca-certificates for HTTPS)
+RUN apk add --no-cache \
+    git \
+    ca-certificates \
+    tzdata
 
+# Set working directory
 WORKDIR /build
 
-# Copy go.mod first
-COPY go.mod ./
-# Copy go.sum if it exists
-COPY go.sum ./
-# Generate go.sum if it doesn't exist and download dependencies
-RUN test -f go.sum || (go mod tidy && go mod download)
+# ============================================================================
+# Dependency layer caching optimization
+# Copy go.mod and go.sum first, then download dependencies
+# This allows Docker to cache dependencies if source code changes
+# ============================================================================
+COPY go.mod go.sum ./
+RUN go mod download && go mod verify
 
+# ============================================================================
 # Copy source code
+# This is done AFTER dependency download to maximize cache hits
+# ============================================================================
 COPY . .
 
-# Build the binary
-# CGO_ENABLED=0 for static linking (required for scratch image)
-# -ldflags for embedding version information
+# ============================================================================
+# Build the static binary
+# ============================================================================
+# Build arguments for version information
 ARG VERSION=dev
 ARG GIT_COMMIT=none
 ARG BUILD_DATE=unknown
 
+# Compile with optimization flags:
+# - CGO_ENABLED=0: Disable CGO for static linking (required for scratch)
+# - GOOS=linux: Target Linux OS
+# - GOARCH=amd64: Target AMD64 architecture (change for multi-arch)
+# - -ldflags="-w -s": Strip debug info and symbol table (reduces size ~30%)
+# - -ldflags="-X ...": Embed version information at compile time
+# - -trimpath: Remove file system paths from binary for reproducibility
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build \
+    -trimpath \
     -ldflags="-w -s -X main.Version=${VERSION} -X main.GitCommit=${GIT_COMMIT} -X main.BuildDate=${BUILD_DATE}" \
     -o prometheus-storagebox-exporter .
 
-# Stage 2: Create minimal runtime image
+# ============================================================================
+# Stage 2: Runtime - Minimal final image
+# ============================================================================
 FROM scratch
 
-# Copy CA certificates for HTTPS
+# Copy CA certificates from builder (required for HTTPS requests to Hetzner API)
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 
-# Copy timezone data
+# Copy timezone data from builder (required for proper time handling)
 COPY --from=builder /usr/share/zoneinfo /usr/share/zoneinfo
 
-# Copy the binary
+# Copy the compiled static binary
 COPY --from=builder /build/prometheus-storagebox-exporter /prometheus-storagebox-exporter
 
-# Expose metrics port
+# Expose the metrics port
 EXPOSE 9509
 
-# Run as non-root user
 USER 65534:65534
 
-# Set entry point
 ENTRYPOINT ["/prometheus-storagebox-exporter"]

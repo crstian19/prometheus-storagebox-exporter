@@ -111,6 +111,25 @@ jobs:
           go-version: '1.25.5'
           cache: true
 
+      - name: Run GoReleaser
+        uses: goreleaser/goreleaser-action@v6
+        with:
+          distribution: goreleaser
+          version: latest
+          args: release --clean
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY_OWNER: crstian19
+
+  docker:
+    name: Build and Push Docker Images
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: [lint, test]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
 
@@ -124,14 +143,32 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Run GoReleaser
-        uses: goreleaser/goreleaser-action@v6
+      - name: Extract version from tag
+        id: version
+        run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+
+      - name: Build and push multi-arch Docker image
+        uses: docker/build-push-action@v6
         with:
-          distribution: goreleaser
-          version: latest
-          args: release --clean
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GITHUB_REPOSITORY_OWNER: crstian19
+          context: .
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: |
+            ghcr.io/${{ github.repository_owner }}/prometheus-storagebox-exporter:${{ steps.version.outputs.VERSION }}
+            ghcr.io/${{ github.repository_owner }}/prometheus-storagebox-exporter:latest
+          build-args: |
+            VERSION=${{ steps.version.outputs.VERSION }}
+            GIT_COMMIT=${{ github.sha }}
+            BUILD_DATE=${{ github.event.head_commit.timestamp }}
+          labels: |
+            org.opencontainers.image.title=prometheus-storagebox-exporter
+            org.opencontainers.image.description=Prometheus exporter for Hetzner Storage Box
+            org.opencontainers.image.version=${{ steps.version.outputs.VERSION }}
+            org.opencontainers.image.revision=${{ github.sha }}
+            org.opencontainers.image.created=${{ github.event.head_commit.timestamp }}
+            org.opencontainers.image.source=${{ github.repositoryUrl }}
+            org.opencontainers.image.licenses=MIT
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
 
   
