@@ -1,3 +1,6 @@
+# Version 2 configuration
+version: 2
+
 project_name: prometheus-storagebox-exporter
 
 before:
@@ -34,7 +37,6 @@ builds:
 
 archives:
   - id: default
-    format: tar.gz
     name_template: >-
       {{ .ProjectName }}_
       {{- .Version }}_
@@ -50,13 +52,13 @@ archives:
       - README.md
       - LICENSE
       - DESIGN.md
-      - grafana-dashboard.json
+      - grafana-provisioning/dashboards/grafana-dashboard.json
 
 checksum:
   name_template: 'checksums.txt'
 
 snapshot:
-  name_template: "{{ incpatch .Version }}-next"
+  version_template: "{{ incpatch .Version }}-next"
 
 changelog:
   sort: asc
