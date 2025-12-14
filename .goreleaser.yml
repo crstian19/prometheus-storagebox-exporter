@@ -61,80 +61,12 @@ snapshot:
   version_template: "{{ incpatch .Version }}-next"
 
 changelog:
-  sort: asc
-  use: github
-  filters:
-    exclude:
-      - '^docs:'
-      - '^test:'
-      - '^ci:'
-      - '^chore:'
-      - '^build:'
-  groups:
-    - title: Features
-      regexp: '^.*?feat(\([[:word:]]+\))??!?:.+$'
-      order: 0
-    - title: Bug Fixes
-      regexp: '^.*?fix(\([[:word:]]+\))??!?:.+$'
-      order: 1
-    - title: Performance Improvements
-      regexp: '^.*?perf(\([[:word:]]+\))??!?:.+$'
-      order: 2
-    - title: Others
-      order: 999
+  disable: true
 
 release:
   github:
     owner: "{{ .Env.GITHUB_REPOSITORY_OWNER }}"
     name: prometheus-storagebox-exporter
-  draft: false
+  draft: true
   prerelease: auto
   mode: replace
-  name_template: "{{.ProjectName}} {{.Version}}"
-  header: |
-    ## Prometheus Hetzner Storage Box Exporter {{.Version}}
-
-    ### 📦 Installation
-
-    **Binary Download:**
-    Download the appropriate binary for your platform from the assets below.
-
-    **Docker:**
-    Build and run using the included Dockerfile:
-    ```bash
-    # Build the image
-    docker build -t prometheus-storagebox-exporter:{{.Version}} .
-
-    # Or pull from GitHub Container Registry
-    docker pull ghcr.io/{{ .Env.GITHUB_REPOSITORY_OWNER }}/{{ .ProjectName }}:{{.Version}}
-    docker pull ghcr.io/{{ .Env.GITHUB_REPOSITORY_OWNER }}/{{ .ProjectName }}:latest
-
-    # Run the container
-    docker run -d \
-      --name storagebox-exporter \
-      -p 9509:9509 \
-      -e HETZNER_TOKEN="your-api-token" \
-      prometheus-storagebox-exporter:{{.Version}}
-    ```
-
-    ### 🔧 Configuration
-
-    **Basic usage:**
-    ```bash
-    export HETZNER_TOKEN="your-api-token"
-    ./prometheus-storagebox-exporter
-    ```
-
-    **With file-based token:**
-    ```bash
-    echo "your-api-token" > /run/secrets/hetzner-token
-    export HETZNER_TOKEN_FILE="/run/secrets/hetzner-token"
-    ./prometheus-storagebox-exporter
-    ```
-
-    ### 📚 Documentation
-
-    - [Full Documentation](https://github.com/{{ .Env.GITHUB_REPOSITORY_OWNER }}/{{ .ProjectName }}/blob/main/README.md)
-    - [Configuration Guide](https://github.com/{{ .Env.GITHUB_REPOSITORY_OWNER }}/{{ .ProjectName }}/blob/main/Claude.md)
-
-    **Full Changelog**: https://github.com/{{ .Env.GITHUB_REPOSITORY_OWNER }}/{{ .ProjectName }}/compare/{{ .PreviousTag }}...{{ .Tag }}
