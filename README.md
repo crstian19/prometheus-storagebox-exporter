@@ -88,8 +88,13 @@ docker run -d \
 wget https://github.com/crstian19/prometheus-storagebox-exporter/releases/latest/download/prometheus-storagebox-exporter_linux_x86_64.tar.gz
 tar xzf prometheus-storagebox-exporter_linux_x86_64.tar.gz
 
-# Run
+# Run with environment variable
 export HETZNER_TOKEN="your-api-token"
+./prometheus-storagebox-exporter
+
+# Or with token file (recommended for NixOS)
+echo "your-api-token" > /run/secrets/hetzner-token
+export HETZNER_TOKEN_FILE="/run/secrets/hetzner-token"
 ./prometheus-storagebox-exporter
 ```
 
@@ -107,7 +112,8 @@ Open http://localhost:9509/metrics to view the exported metrics.
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `HETZNER_TOKEN` | *required* | Hetzner API token |
+| `HETZNER_TOKEN` | *required* | Hetzner API token (mutually exclusive with HETZNER_TOKEN_FILE) |
+| `HETZNER_TOKEN_FILE` | *optional* | Path to file containing Hetzner API token (mutually exclusive with HETZNER_TOKEN) |
 | `LISTEN_ADDRESS` | `:9509` | Address to listen on |
 | `METRICS_PATH` | `/metrics` | Path for metrics endpoint |
 | `LOG_LEVEL` | `info` | Log level (debug, info, warn, error) |
@@ -123,6 +129,7 @@ Open http://localhost:9509/metrics to view the exported metrics.
 
 Flags:
   --hetzner-token string           Hetzner API token (can also be set via HETZNER_TOKEN env var)
+  --hetzner-token-file string      Path to file containing Hetzner API token (can also be set via HETZNER_TOKEN_FILE env var)
   --listen-address string          Address to listen on for HTTP requests (default ":9509")
   --metrics-path string            Path under which to expose metrics (default "/metrics")
   --log-level string               Log level (debug, info, warn, error) (default "info")
@@ -556,13 +563,33 @@ golangci-lint run
 ### Common Issues
 
 <details>
-<summary><strong>Error: "HETZNER_TOKEN environment variable or --hetzner-token flag is required"</strong></summary>
+<summary><strong>Error: "HETZNER_TOKEN or HETZNER_TOKEN_FILE environment variable is required"</strong></summary>
 
-Make sure you've set the `HETZNER_TOKEN` environment variable or passed it via the `--hetzner-token` flag.
+Make sure you've set either the `HETZNER_TOKEN` environment variable or the `HETZNER_TOKEN_FILE` environment variable.
 
 ```bash
+# Option 1: Direct token
 export HETZNER_TOKEN="your-token-here"
 ./prometheus-storagebox-exporter
+
+# Option 2: Token from file (recommended for NixOS)
+echo "your-token-here" > /run/secrets/hetzner-token
+export HETZNER_TOKEN_FILE="/run/secrets/hetzner-token"
+./prometheus-storagebox-exporter
+```
+
+</details>
+
+<details>
+<summary><strong>Error: "cannot specify both HETZNER_TOKEN and HETZNER_TOKEN_FILE"</strong></summary>
+
+You cannot specify both token methods simultaneously. Choose either `HETZNER_TOKEN` or `HETZNER_TOKEN_FILE`, not both.
+
+```bash
+# Correct: Use only one method
+export HETZNER_TOKEN="your-token-here"
+# or
+export HETZNER_TOKEN_FILE="/path/to/token/file"
 ```
 
 </details>

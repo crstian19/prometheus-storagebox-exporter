@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/spf13/pflag"
@@ -12,6 +13,7 @@ import (
 // Config holds the application configuration
 type Config struct {
 	HetznerToken         string
+	HetznerTokenFile     string
 	ListenAddress        string
 	MetricsPath          string
 	LogLevel             string
@@ -49,10 +51,45 @@ func Load() (*Config, error) {
 		"Cache storage type (memory, redis) (can also be set via CACHE_STORAGE_TYPE env var, default: memory)")
 	pflag.StringVar(&cfg.HetznerToken, "hetzner-token", os.Getenv("HETZNER_TOKEN"),
 		"Hetzner API token (can also be set via HETZNER_TOKEN env var)")
+	pflag.StringVar(&cfg.HetznerTokenFile, "hetzner-token-file", os.Getenv("HETZNER_TOKEN_FILE"),
+		"Path to file containing Hetzner API token (can also be set via HETZNER_TOKEN_FILE env var)")
 	pflag.BoolVar(&cfg.ShowVersion, "version", false,
 		"Show version information and exit")
 
 	pflag.Parse()
+
+	// Validate token configuration before reading from file
+	tokenFromEnv := os.Getenv("HETZNER_TOKEN")
+	tokenFileFromEnv := os.Getenv("HETZNER_TOKEN_FILE")
+
+	// Check if both token methods are specified in environment
+	if tokenFromEnv != "" && tokenFileFromEnv != "" {
+		return nil, fmt.Errorf("cannot specify both HETZNER_TOKEN and HETZNER_TOKEN_FILE environment variables")
+	}
+
+	// Check if both token methods are specified via flags/env mix
+	if cfg.HetznerToken != "" && cfg.HetznerTokenFile != "" {
+		return nil, fmt.Errorf("cannot specify both --hetzner-token and --hetzner-token-file")
+	}
+
+	// Handle case where token is specified via flag but file is also specified in env
+	if cfg.HetznerToken != "" && tokenFileFromEnv != "" {
+		return nil, fmt.Errorf("cannot specify both --hetzner-token and HETZNER_TOKEN_FILE environment variable")
+	}
+
+	// Handle case where file is specified via flag but token is also specified in env
+	if cfg.HetznerTokenFile != "" && tokenFromEnv != "" {
+		return nil, fmt.Errorf("cannot specify both --hetzner-token-file and HETZNER_TOKEN environment variable")
+	}
+
+	// Read token from file if specified
+	if cfg.HetznerTokenFile != "" {
+		token, err := readTokenFromFile(cfg.HetznerTokenFile)
+		if err != nil {
+			return nil, fmt.Errorf("failed to read token from file %s: %w", cfg.HetznerTokenFile, err)
+		}
+		cfg.HetznerToken = token
+	}
 
 	// Determine cache TTL: flag > env var > default (0 = disabled)
 	if cacheTTLFlag > 0 {
@@ -86,9 +123,10 @@ func Load() (*Config, error) {
 	}
 	cfg.CacheCleanupInterval = time.Duration(cleanupSeconds) * time.Second
 
-	// Validate required configuration
-	if !cfg.ShowVersion && cfg.HetznerToken == "" {
-		return nil, fmt.Errorf("HETZNER_TOKEN environment variable or --hetzner-token flag is required")
+	// Validate that at least one token method is provided
+	if !cfg.ShowVersion && cfg.HetznerToken == "" && cfg.HetznerTokenFile == "" &&
+		tokenFromEnv == "" && tokenFileFromEnv == "" {
+		return nil, fmt.Errorf("HETZNER_TOKEN or HETZNER_TOKEN_FILE environment variable is required (or corresponding flags)")
 	}
 
 	return cfg, nil
@@ -100,4 +138,19 @@ func getEnv(key, defaultValue string) string {
 		return value
 	}
 	return defaultValue
+}
+
+// readTokenFromFile reads the Hetzner API token from a file
+func readTokenFromFile(filename string) (string, error) {
+	data, err := os.ReadFile(filename)
+	if err != nil {
+		return "", fmt.Errorf("failed to read file: %w", err)
+	}
+
+	token := strings.TrimSpace(string(data))
+	if token == "" {
+		return "", fmt.Errorf("token file is empty")
+	}
+
+	return token, nil
 }
