@@ -26,9 +26,9 @@ A Prometheus exporter for [Hetzner Storage Box](https://www.hetzner.com/storage/
 - ✅ **Modern API integration** - Uses current Hetzner API (no sunset deadline)
 - 📊 **Comprehensive metrics** - 15+ metrics covering usage, access, and configuration
 - 🐳 **Docker ready** - Multi-architecture images (amd64, arm64)
-- ☸️ **Kubernetes ready** - Includes manifests and Helm chart
+- ☸️ **Kubernetes ready** - Includes manifests
 - 🎯 **Minimal footprint** - Less than 50MB memory usage
-- 📈 **Grafana dashboard** - Pre-built dashboard with visualizations
+- 📈 **Grafana dashboard** - Pre-built dashboard with visualizations ([quick import](grafana-provisioning/dashboards/grafana-dashboard.json))
 - 🔒 **Secure** - Bearer token authentication
 
 ### Why this exporter?
@@ -45,9 +45,15 @@ This exporter:
 
 <div align="center">
 
-<img src="https://cdn.crstian.me/storage-exporter-dashboard-1.png" alt="Dashboard Overview" width="800">
+<a href="grafana-provisioning/dashboards/grafana-dashboard.json">
+  <img src="https://cdn.crstian.me/storage-exporter-dashboard-1.png" alt="Dashboard Overview - Click to download" width="800">
+</a>
 
-<img src="https://cdn.crstian.me/storage-exporter-dashboard-2.png" alt="Dashboard Details" width="800">
+<a href="grafana-provisioning/dashboards/grafana-dashboard.json">
+  <img src="https://cdn.crstian.me/storage-exporter-dashboard-2.png" alt="Dashboard Details - Click to download" width="800">
+</a>
+
+<p><em>Click on any dashboard image to download the JSON file for import </em></p>
 
 </div>
 
@@ -261,11 +267,6 @@ The exporter exposes 15+ metrics organized in 4 categories:
 
 ---
 
-## 📈 Grafana Dashboard
-
-A comprehensive Grafana dashboard is included with 21 panels:
-
-
 
 ### Dashboard Features
 
@@ -282,7 +283,7 @@ A comprehensive Grafana dashboard is included with 21 panels:
 
 ### Quick test with Docker Compose
 
-The repository includes a complete Docker Compose test with:
+The repository includes a complete Docker Compose test with pre-configured dashboard:
 
 ```bash
 # Start all services (Exporter + Prometheus + Grafana)
@@ -293,9 +294,11 @@ docker-compose -f docker-compose.dev.yml up -d
 ```
 
 Access points:
-- 🎯 **Grafana Dashboard**: http://localhost:3000 (admin/admin)
+- 🎯 **Grafana Dashboard**: http://localhost:3000 (admin/admin) - *Dashboard is pre-imported*
 - 📈 **Prometheus**: http://localhost:9090
 - 🔧 **Exporter**: http://localhost:9509/metrics
+
+> **💡 For production**: Import the dashboard manually using [grafana-dashboard.json](grafana-provisioning/dashboards/grafana-dashboard.json)
 
 ### Dashboard Panels
 
@@ -674,7 +677,7 @@ Contributions are welcome! Please:
 
 1. Update the collector in `internal/collector/storagebox.go`
 2. Add metric definitions
-3. Update the Grafana dashboard if needed
+3. Update the Grafana dashboard ([grafana-dashboard.json](grafana-provisioning/dashboards/grafana-dashboard.json)) if needed
 4. Update this README
 
 ---
@@ -711,7 +714,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 If you find this project useful and want to support its development, you can donate via PayPal:
 
-[![Donate with PayPal](https://raw.githubusercontent.com/stefan-niedermann/paypal-donate-button/master/paypal-donate-button.png)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=MUW2XFMQB2782)
+[![Donate](https://img.shields.io/badge/Donate-PayPal-blue?style=for-the-badge&logo=paypal&logoColor=white)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=MUW2XFMQB2782)
 
 Your support helps keep this project maintained and improved! 🙏
 
