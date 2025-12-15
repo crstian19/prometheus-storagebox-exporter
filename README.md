@@ -21,39 +21,31 @@
 
 ## 📋 Overview
 
-A Prometheus exporter for [Hetzner Storage Box](https://www.hetzner.com/storage/storage-box) that uses the modern Hetzner API (`api.hetzner.com`) instead of the deprecated Robot API.
+A Prometheus exporter for [Hetzner Storage Box](https://www.hetzner.com/storage/storage-box) using the modern Hetzner Cloud API.
 
-- ✅ **Modern API integration** - Uses current Hetzner API (no sunset deadline)
-- 📊 **Comprehensive metrics** - 15+ metrics covering usage, access, and configuration
-- 🐳 **Docker ready** - Multi-architecture images (amd64, arm64)
-- ☸️ **Kubernetes ready** - Includes manifests
-- 🎯 **Minimal footprint** - Less than 50MB memory usage
-- 📈 **Grafana dashboard** - Pre-built dashboard with visualizations ([quick import](grafana-provisioning/dashboards/grafana-dashboard.json))
-- 🔒 **Secure** - Bearer token authentication
+- ✅ **15+ comprehensive metrics** - Storage usage, access settings, snapshots, and protection status
+- 🐳 **Multi-architecture Docker** - Images for amd64 and arm64
+- ☸️ **Kubernetes ready** - Pre-built manifests included
+- 🎯 **Lightweight** - Under 50MB memory usage
+- 📈 **Grafana dashboard** - 21-panel dashboard ready to import ([download](grafana-provisioning/dashboards/grafana-dashboard.json))
+- 🔒 **Bearer token auth** - Secure API authentication
 
-### Why this exporter?
+### Key Features
 
-This exporter:
-
-- Uses the modern Hetzner API that won't be deprecated
-- Provides 4x more metrics including access settings and protection status
-- Offers multi-architecture Docker images
-- Includes a comprehensive Grafana dashboard
-- Is actively maintained with CI/CD automation
+- **All-in-one solution** - Includes Docker images, K8s manifests, and Grafana dashboard
+- **Additional metrics** - Access settings (SSH, Samba, WebDAV, ZFS), snapshot plans, and delete protection
+- **Production ready** - Health checks, structured logging, and comprehensive error handling
 
 ### 📊 Dashboard Preview
 
 <div align="center">
 
 <a href="grafana-provisioning/dashboards/grafana-dashboard.json">
-  <img src="https://cdn.crstian.me/storage-exporter-dashboard-1.png" alt="Dashboard Overview - Click to download" width="800">
+  <img src="https://cdn.crstian.me/storagebox-dashboard.png" alt="Dashboard Overview - Click to download" width="800">
 </a>
 
-<a href="grafana-provisioning/dashboards/grafana-dashboard.json">
-  <img src="https://cdn.crstian.me/storage-exporter-dashboard-2.png" alt="Dashboard Details - Click to download" width="800">
-</a>
 
-<p><em>Click on any dashboard image to download the JSON file for import </em></p>
+<p><em>Click on dashboard image to download the JSON file for import </em></p>
 
 </div>
 
