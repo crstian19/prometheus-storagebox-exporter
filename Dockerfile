@@ -37,15 +37,16 @@ COPY . .
 ARG VERSION=dev
 ARG GIT_COMMIT=none
 ARG BUILD_DATE=unknown
+ARG TARGETARCH=amd64
 
 # Compile with optimization flags:
 # - CGO_ENABLED=0: Disable CGO for static linking (required for scratch)
 # - GOOS=linux: Target Linux OS
-# - GOARCH=amd64: Target AMD64 architecture (change for multi-arch)
+# - GOARCH=${TARGETARCH}: Use target architecture for multi-arch builds
 # - -ldflags="-w -s": Strip debug info and symbol table (reduces size ~30%)
 # - -ldflags="-X ...": Embed version information at compile time
 # - -trimpath: Remove file system paths from binary for reproducibility
-RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build \
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=${TARGETARCH} go build \
     -trimpath \
     -ldflags="-w -s -X main.Version=${VERSION} -X main.GitCommit=${GIT_COMMIT} -X main.BuildDate=${BUILD_DATE}" \
     -o prometheus-storagebox-exporter .
