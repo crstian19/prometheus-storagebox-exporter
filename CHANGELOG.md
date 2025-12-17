@@ -1,5 +1,16 @@
 # Changelog
 
+## [v0.4.0](https://github.com/crstian19/prometheus-storagebox-exporter/releases/tag/v0.4.0)
+
+### Features
+
+- **main.go**: enhance HTML and CSS for Prometheus Hetzner Storage Box Exporter
+
+### Bug Fixes
+
+- **dockerfile**: use TARGETARCH for multi-arch builds
+- **dockerfile**: use TARGETARCH for multi-arch builds
+
 ## [v0.2.0](https://github.com/crstian19/prometheus-storagebox-exporter/releases/tag/v0.2.0)
 
 ### Features
