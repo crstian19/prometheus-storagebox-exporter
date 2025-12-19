@@ -93,7 +93,7 @@ func NewStorageBoxCollector(client *hetzner.Client, cacheTTL time.Duration, cach
 		),
 		status: prometheus.NewDesc(
 			"storagebox_status",
-			"Current status of storage box (1=active, 0=inactive)",
+			"Storage box status (always 1, status in label: active, initializing, locked)",
 			[]string{"id", "name", "status"},
 			nil,
 		),
@@ -342,15 +342,11 @@ func (c *StorageBoxCollector) collectStorageBox(ch chan<- prometheus.Metric, box
 		id, name, box.Username, server, location, box.StorageBoxType.Name, box.System,
 	)
 
-	// Status metric
-	statusValue := float64(0)
-	if box.Status == "active" {
-		statusValue = 1
-	}
+	// Status metric (always 1, status value in label)
 	ch <- prometheus.MustNewConstMetric(
 		c.status,
 		prometheus.GaugeValue,
-		statusValue,
+		1,
 		id, name, box.Status,
 	)
 
