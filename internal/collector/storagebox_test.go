@@ -172,7 +172,9 @@ func TestCollectSuccess(t *testing.T) {
 			return
 		}
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(mockStorageBoxResponse())
+		if err := json.NewEncoder(w).Encode(mockStorageBoxResponse()); err != nil {
+			t.Errorf("Failed to encode mock response: %v", err)
+		}
 	}
 
 	server, client := setupMockServer(t, handler)
@@ -202,7 +204,9 @@ func TestCollectWithCacheHit(t *testing.T) {
 	handler := func(w http.ResponseWriter, r *http.Request) {
 		callCount++
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(mockStorageBoxResponse())
+		if err := json.NewEncoder(w).Encode(mockStorageBoxResponse()); err != nil {
+			t.Errorf("Failed to encode mock response: %v", err)
+		}
 	}
 
 	server, client := setupMockServer(t, handler)
@@ -277,7 +281,9 @@ func TestCollectAPIError(t *testing.T) {
 				w.Header().Set("Content-Type", "application/json")
 				w.Header().Set("X-Request-Id", "test-request-123")
 				w.WriteHeader(tt.statusCode)
-				w.Write([]byte(tt.body))
+				if _, err := w.Write([]byte(tt.body)); err != nil {
+					t.Errorf("Failed to write response body: %v", err)
+				}
 			}
 
 			server, client := setupMockServer(t, handler)
@@ -308,7 +314,9 @@ func TestCollectWithCacheAndAPIError(t *testing.T) {
 	handler := func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusInternalServerError)
-		w.Write([]byte(`{"error": {"message": "Server error"}}`))
+		if _, err := w.Write([]byte(`{"error": {"message": "Server error"}}`)); err != nil {
+			t.Errorf("Failed to write response body: %v", err)
+		}
 	}
 
 	server, client := setupMockServer(t, handler)
@@ -373,7 +381,9 @@ func TestBoolToFloat64(t *testing.T) {
 func TestCollectStorageBoxMetrics(t *testing.T) {
 	handler := func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(mockStorageBoxResponse())
+		if err := json.NewEncoder(w).Encode(mockStorageBoxResponse()); err != nil {
+			t.Errorf("Failed to encode mock response: %v", err)
+		}
 	}
 
 	server, client := setupMockServer(t, handler)
@@ -402,9 +412,11 @@ func TestCollectStorageBoxMetrics(t *testing.T) {
 func TestCollectEmptyStorageBoxes(t *testing.T) {
 	handler := func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(map[string]interface{}{
+		if err := json.NewEncoder(w).Encode(map[string]interface{}{
 			"storage_boxes": []interface{}{},
-		})
+		}); err != nil {
+			t.Errorf("Failed to encode mock response: %v", err)
+		}
 	}
 
 	server, client := setupMockServer(t, handler)
@@ -434,9 +446,9 @@ func TestHandleErrorAPIError(t *testing.T) {
 	collector := NewStorageBoxCollector(client, 0, 0, 0)
 
 	tests := []struct {
-		name       string
-		err        error
-		source     string
+		name   string
+		err    error
+		source string
 	}{
 		{
 			name:   "auth error 401",
@@ -496,7 +508,9 @@ func (e *testNetworkError) Error() string {
 func TestCollectorRegistration(t *testing.T) {
 	handler := func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(mockStorageBoxResponse())
+		if err := json.NewEncoder(w).Encode(mockStorageBoxResponse()); err != nil {
+			t.Errorf("Failed to encode mock response: %v", err)
+		}
 	}
 
 	server, client := setupMockServer(t, handler)
@@ -566,7 +580,9 @@ func TestCollectWithNilSnapshotPlan(t *testing.T) {
 
 	handler := func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(response)
+		if err := json.NewEncoder(w).Encode(response); err != nil {
+			t.Errorf("Failed to encode mock response: %v", err)
+		}
 	}
 
 	server, client := setupMockServer(t, handler)
