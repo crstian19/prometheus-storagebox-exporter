@@ -1,5 +1,13 @@
 # Changelog
 
+## [v0.4.2](https://github.com/crstian19/prometheus-storagebox-exporter/releases/tag/v0.4.2)
+
+### Bug Fixes
+
+- **collector/storagebox**: update storage box status metric
+- **grafana-dashboard**: update status mappings and query
+- **tests**: handle errors in mock responses
+
 ## [v0.4.0](https://github.com/crstian19/prometheus-storagebox-exporter/releases/tag/v0.4.0)
 
 ### Features
