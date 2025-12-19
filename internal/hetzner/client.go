@@ -32,6 +32,11 @@ func NewClient(token string) *Client {
 	}
 }
 
+// SetBaseURL sets a custom base URL (useful for testing)
+func (c *Client) SetBaseURL(url string) {
+	c.baseURL = url
+}
+
 // StorageBox represents a Hetzner Storage Box
 type StorageBox struct {
 	ID             int64             `json:"id"`
