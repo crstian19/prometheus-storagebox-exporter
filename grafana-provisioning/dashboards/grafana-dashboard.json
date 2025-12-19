@@ -1460,15 +1460,20 @@
           "mappings": [
             {
               "options": {
-                "0": {
-                  "color": "red",
-                  "index": 0,
-                  "text": "Inactive"
-                },
-                "1": {
+                "active": {
                   "color": "green",
-                  "index": 1,
+                  "index": 0,
                   "text": "Active"
+                },
+                "initializing": {
+                  "color": "yellow",
+                  "index": 1,
+                  "text": "Initializing"
+                },
+                "locked": {
+                  "color": "orange",
+                  "index": 2,
+                  "text": "Locked"
                 }
               },
               "type": "value"
@@ -1478,12 +1483,8 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "red",
-                "value": 0
-              },
-              {
                 "color": "green",
-                "value": 1
+                "value": null
               }
             ]
           },
@@ -1508,7 +1509,7 @@
           "calcs": [
             "lastNotNull"
           ],
-          "fields": "",
+          "fields": "/^status$/",
           "values": false
         },
         "showPercentChange": false,
@@ -1524,12 +1525,32 @@
           },
           "editorMode": "code",
           "expr": "storagebox_status{name=~\"$storagebox\"}",
-          "legendFormat": "Status",
-          "range": true,
+          "format": "table",
+          "instant": true,
+          "legendFormat": "{{status}}",
+          "range": false,
           "refId": "A"
         }
       ],
       "title": "Storage Box Status",
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true,
+              "Value": true,
+              "__name__": true,
+              "id": true,
+              "instance": true,
+              "job": true,
+              "name": true
+            },
+            "indexByName": {},
+            "renameByName": {}
+          }
+        }
+      ],
       "type": "stat"
     },
     {
