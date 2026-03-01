@@ -28,7 +28,7 @@ jobs:
           fetch-depth: 0
 
       - name: Run Releaser Pleaser
-        uses: apricote/releaser-pleaser@v0.7.1
+        uses: apricote/releaser-pleaser@v0.8.0
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           extra-files: |
