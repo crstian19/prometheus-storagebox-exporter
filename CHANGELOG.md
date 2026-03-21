@@ -1,5 +1,11 @@
 # Changelog
 
+## [v0.5.2](https://github.com/crstian19/prometheus-storagebox-exporter/releases/tag/v0.5.2)
+
+### Bug Fixes
+
+- **ci**: trigger docker build on release published event (#50)
+
 ## [v0.5.1](https://github.com/crstian19/prometheus-storagebox-exporter/releases/tag/v0.5.1)
 
 ### Bug Fixes
