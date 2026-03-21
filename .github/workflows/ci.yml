@@ -24,7 +24,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v6
         with:
-          go-version: '1.25.5'
+          go-version: '1.26.1'
           cache: true
 
       - name: Run golangci-lint
@@ -43,7 +43,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v6
         with:
-          go-version: '1.25.5'
+          go-version: '1.26.1'
           cache: true
 
       - name: Download dependencies
@@ -76,7 +76,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v6
         with:
-          go-version: '1.25.5'
+          go-version: '1.26.1'
           cache: true
 
       - name: Build binary
@@ -107,7 +107,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v6
         with:
-          go-version: '1.25.5'
+          go-version: '1.26.1'
           cache: true
 
       - name: Run GoReleaser
