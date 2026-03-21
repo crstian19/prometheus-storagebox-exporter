@@ -1206,7 +1206,7 @@
             {
               "options": {
                 "0": {
-                  "color": "red",
+                  "color": "dark-gray",
                   "index": 0,
                   "text": "Disabled"
                 },
@@ -1291,7 +1291,7 @@
             {
               "options": {
                 "0": {
-                  "color": "red",
+                  "color": "dark-gray",
                   "index": 0,
                   "text": "Disabled"
                 },
@@ -1376,7 +1376,7 @@
             {
               "options": {
                 "0": {
-                  "color": "red",
+                  "color": "dark-gray",
                   "index": 0,
                   "text": "Disabled"
                 },
@@ -1567,7 +1567,7 @@
             {
               "options": {
                 "0": {
-                  "color": "orange",
+                  "color": "dark-gray",
                   "index": 0,
                   "text": "Disabled"
                 },
@@ -1652,7 +1652,7 @@
             {
               "options": {
                 "0": {
-                  "color": "red",
+                  "color": "dark-gray",
                   "index": 0,
                   "text": "Not Reachable"
                 },
@@ -1737,7 +1737,7 @@
             {
               "options": {
                 "0": {
-                  "color": "red",
+                  "color": "dark-gray",
                   "index": 0,
                   "text": "Disabled"
                 },
@@ -1822,14 +1822,14 @@
             {
               "options": {
                 "0": {
-                  "color": "green",
+                  "color": "dark-gray",
                   "index": 0,
-                  "text": "Unprotected"
+                  "text": "Disabled"
                 },
                 "1": {
-                  "color": "yellow",
+                  "color": "green",
                   "index": 1,
-                  "text": "Protected"
+                  "text": "Enabled"
                 }
               },
               "type": "value"
