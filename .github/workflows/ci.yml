@@ -4,13 +4,9 @@ on:
   push:
     branches:
       - main
-    tags:
-      - 'v*'
   pull_request:
     branches:
       - main
-  release:
-    types: [published]
 permissions:
   contents: write
   packages: write
@@ -112,25 +108,6 @@ jobs:
           go-version: '1.26.1'
           cache: true
 
-      - name: Run GoReleaser
-        uses: goreleaser/goreleaser-action@v7
-        with:
-          distribution: goreleaser
-          version: "~> v2"
-          args: release --clean
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GITHUB_REPOSITORY_OWNER: crstian19
-
-  docker:
-    name: Build and Push Docker Images
-    runs-on: ubuntu-latest
-    if: github.event_name == 'release'
-    needs: [lint, test]
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v6
-
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v4
 
@@ -143,6 +120,16 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Run GoReleaser
+        uses: goreleaser/goreleaser-action@v7
+        with:
+          distribution: goreleaser
+          version: "~> v2"
+          args: release --clean
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY_OWNER: crstian19
 
       - name: Docker metadata
         id: meta
@@ -168,5 +155,3 @@ jobs:
             BUILD_DATE=${{ github.event.head_commit.timestamp }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
-
-  
