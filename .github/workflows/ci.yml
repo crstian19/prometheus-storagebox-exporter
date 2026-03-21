@@ -9,6 +9,8 @@ on:
   pull_request:
     branches:
       - main
+  release:
+    types: [published]
 permissions:
   contents: write
   packages: write
@@ -123,7 +125,7 @@ jobs:
   docker:
     name: Build and Push Docker Images
     runs-on: ubuntu-latest
-    if: startsWith(github.ref, 'refs/tags/v')
+    if: startsWith(github.ref, 'refs/tags/v') || github.event_name == 'release'
     needs: [lint, test]
     steps:
       - name: Checkout code
