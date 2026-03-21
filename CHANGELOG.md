@@ -1,5 +1,11 @@
 # Changelog
 
+## [v0.5.3](https://github.com/crstian19/prometheus-storagebox-exporter/releases/tag/v0.5.3)
+
+### Bug Fixes
+
+- **ci**: fix docker build trigger, double release and goreleaser deprecations (#53)
+
 ## [v0.5.2](https://github.com/crstian19/prometheus-storagebox-exporter/releases/tag/v0.5.2)
 
 ### Bug Fixes
