@@ -30,7 +30,7 @@ jobs:
       - name: Run Releaser Pleaser
         uses: apricote/releaser-pleaser@v0.8.0
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.RELEASE_TOKEN }}
           extra-files: |
             Dockerfile
             docker-compose.dev.yml
