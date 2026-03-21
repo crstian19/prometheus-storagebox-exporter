@@ -1,5 +1,11 @@
 # Changelog
 
+## [v0.5.4](https://github.com/crstian19/prometheus-storagebox-exporter/releases/tag/v0.5.4)
+
+### Bug Fixes
+
+- **ci**: use PAT for tag creation and clean up pipeline triggers (#56)
+
 ## [v0.5.3](https://github.com/crstian19/prometheus-storagebox-exporter/releases/tag/v0.5.3)
 
 ### Bug Fixes
