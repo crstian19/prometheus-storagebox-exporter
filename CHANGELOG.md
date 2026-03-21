@@ -1,5 +1,11 @@
 # Changelog
 
+## [v0.5.1](https://github.com/crstian19/prometheus-storagebox-exporter/releases/tag/v0.5.1)
+
+### Bug Fixes
+
+- **grafana-dashboard**: unify stat panel colors and fix label consistency (#48)
+
 ## [v0.5.0](https://github.com/crstian19/prometheus-storagebox-exporter/releases/tag/v0.5.0)
 
 ### Features
