@@ -1,5 +1,11 @@
 # Changelog
 
+## [v0.5.5](https://github.com/crstian19/prometheus-storagebox-exporter/releases/tag/v0.5.5)
+
+### Bug Fixes
+
+- **deps**: update go to v1.26.2 (#66)
+
 ## [v0.5.4](https://github.com/crstian19/prometheus-storagebox-exporter/releases/tag/v0.5.4)
 
 ### Bug Fixes
