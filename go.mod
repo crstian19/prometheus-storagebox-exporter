@@ -1,6 +1,6 @@
 module github.com/crstian19/prometheus-storagebox-exporter
 
-go 1.26.1
+go 1.26.2
 
 require (
 	github.com/prometheus/client_golang v1.23.2
