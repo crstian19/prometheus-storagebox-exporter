@@ -1,5 +1,11 @@
 # Changelog
 
+## [v0.5.6](https://github.com/crstian19/prometheus-storagebox-exporter/releases/tag/v0.5.6)
+
+### Bug Fixes
+
+- **release**: document releasable commit types
+
 ## [v0.5.5](https://github.com/crstian19/prometheus-storagebox-exporter/releases/tag/v0.5.5)
 
 ### Bug Fixes
