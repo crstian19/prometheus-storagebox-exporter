@@ -292,6 +292,7 @@ Triggers: Git tag (v*)
 - **MAJOR:** Breaking changes (API changes, removed metrics)
 - **MINOR:** New features (new metrics, new flags)
 - **PATCH:** Bug fixes, documentation updates
+- **Release trigger note:** Releaser Pleaser ignores non-releasable conventional commit types such as `chore:`. Dependency or CI changes that should produce a patch release must be merged under a releasable type such as `fix:`.
 
 ## Docker Strategy
 
