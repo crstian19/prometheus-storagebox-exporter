@@ -25,7 +25,6 @@ A Prometheus exporter for [Hetzner Storage Box](https://www.hetzner.com/storage/
 
 - ✅ **15+ comprehensive metrics** - Storage usage, access settings, snapshots, and protection status
 - 🐳 **Multi-architecture Docker** - Images for amd64 and arm64
-- ☸️ **Kubernetes ready** - Pre-built manifests included
 - 🎯 **Lightweight** - Under 50MB memory usage
 - 📈 **Grafana dashboard** - 21-panel dashboard ready to import ([download](grafana-provisioning/dashboards/grafana-dashboard.json))
 - 🔒 **Bearer token auth** - Secure API authentication
@@ -66,7 +65,7 @@ You need a Hetzner API token with read permissions:
 
 
 ```bash
-docker-compose up -d
+docker compose up -d
 ```
 
 ### Docker
@@ -99,15 +98,13 @@ docker pull ghcr.io/crstian19/prometheus-storagebox-exporter:latest
 # Available architectures:
 # - Linux amd64 (Intel/AMD)
 # - Linux arm64 (ARM 64-bit)
-# - macOS amd64 (Intel Mac)
-# - macOS arm64 (Apple Silicon)
 ```
 
 **🏷️ Available Tags:**
 - `latest` - Latest release (multi-arch)
 - `v0.x.x` - Specific version (multi-arch)
-- `latest-amd64` - Intel/AMD specific
-- `latest-arm64` - ARM specific
+- `latest-amd64` - Linux Intel/AMD specific
+- `latest-arm64` - Linux ARM64 specific
 
 ### Binary
 
