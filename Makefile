@@ -1,4 +1,4 @@
-.PHONY: help build test lint clean run docker-build docker-run install
+.PHONY: help setup build test lint clean run docker-build docker-run install
 
 # Variables
 BINARY_NAME=prometheus-storagebox-exporter
@@ -13,6 +13,12 @@ help: ## Show this help message
 	@echo ""
 	@echo "Available targets:"
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  %-15s %s\n", $$1, $$2}'
+
+setup: ## Install git hooks and download dependencies (run once per clone)
+	@echo "Setting up development environment..."
+	@lefthook install
+	@go mod download
+	@echo "Setup complete!"
 
 build: ## Build the binary
 	@echo "Building $(BINARY_NAME) $(VERSION)..."

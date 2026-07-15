@@ -129,7 +129,7 @@ func TestNewStorageBoxCollector(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			collector := NewStorageBoxCollector(client, tt.cacheTTL, tt.cacheMaxSize, tt.cacheCleanupInterval)
+			collector := NewStorageBoxCollector(client, tt.cacheTTL, tt.cacheMaxSize, tt.cacheCleanupInterval, BuildInfo{})
 			if collector == nil {
 				t.Fatal("expected collector to be non-nil")
 			}
@@ -145,7 +145,7 @@ func TestNewStorageBoxCollector(t *testing.T) {
 
 func TestDescribe(t *testing.T) {
 	client := hetzner.NewClient("test-token")
-	collector := NewStorageBoxCollector(client, 0, 0, 0)
+	collector := NewStorageBoxCollector(client, 0, 0, 0, BuildInfo{})
 
 	ch := make(chan *prometheus.Desc, 100)
 	go func() {
@@ -180,7 +180,7 @@ func TestCollectSuccess(t *testing.T) {
 	server, client := setupMockServer(t, handler)
 	defer server.Close()
 
-	collector := NewStorageBoxCollector(client, 0, 0, 0)
+	collector := NewStorageBoxCollector(client, 0, 0, 0, BuildInfo{})
 
 	ch := make(chan prometheus.Metric, 100)
 	go func() {
@@ -213,7 +213,7 @@ func TestCollectWithCacheHit(t *testing.T) {
 	defer server.Close()
 
 	// Enable cache with 1 minute TTL
-	collector := NewStorageBoxCollector(client, time.Minute, 0, time.Minute)
+	collector := NewStorageBoxCollector(client, time.Minute, 0, time.Minute, BuildInfo{})
 
 	// First collection - should hit API
 	ch1 := make(chan prometheus.Metric, 100)
@@ -289,7 +289,7 @@ func TestCollectAPIError(t *testing.T) {
 			server, client := setupMockServer(t, handler)
 			defer server.Close()
 
-			collector := NewStorageBoxCollector(client, 0, 0, 0)
+			collector := NewStorageBoxCollector(client, 0, 0, 0, BuildInfo{})
 
 			ch := make(chan prometheus.Metric, 100)
 			go func() {
@@ -323,7 +323,7 @@ func TestCollectWithCacheAndAPIError(t *testing.T) {
 	defer server.Close()
 
 	// Enable cache
-	collector := NewStorageBoxCollector(client, time.Minute, 0, time.Minute)
+	collector := NewStorageBoxCollector(client, time.Minute, 0, time.Minute, BuildInfo{})
 
 	ch := make(chan prometheus.Metric, 100)
 	go func() {
@@ -389,7 +389,7 @@ func TestCollectStorageBoxMetrics(t *testing.T) {
 	server, client := setupMockServer(t, handler)
 	defer server.Close()
 
-	collector := NewStorageBoxCollector(client, 0, 0, 0)
+	collector := NewStorageBoxCollector(client, 0, 0, 0, BuildInfo{})
 
 	ch := make(chan prometheus.Metric, 100)
 	go func() {
@@ -422,7 +422,7 @@ func TestCollectEmptyStorageBoxes(t *testing.T) {
 	server, client := setupMockServer(t, handler)
 	defer server.Close()
 
-	collector := NewStorageBoxCollector(client, 0, 0, 0)
+	collector := NewStorageBoxCollector(client, 0, 0, 0, BuildInfo{})
 
 	ch := make(chan prometheus.Metric, 100)
 	go func() {
@@ -443,7 +443,7 @@ func TestCollectEmptyStorageBoxes(t *testing.T) {
 
 func TestHandleErrorAPIError(t *testing.T) {
 	client := hetzner.NewClient("test-token")
-	collector := NewStorageBoxCollector(client, 0, 0, 0)
+	collector := NewStorageBoxCollector(client, 0, 0, 0, BuildInfo{})
 
 	tests := []struct {
 		name   string
@@ -480,7 +480,7 @@ func TestHandleErrorAPIError(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			// Reset collector for each test
-			collector = NewStorageBoxCollector(client, 0, 0, 0)
+			collector = NewStorageBoxCollector(client, 0, 0, 0, BuildInfo{})
 			// This should not panic
 			collector.handleError(tt.err, tt.source)
 		})
@@ -489,7 +489,7 @@ func TestHandleErrorAPIError(t *testing.T) {
 
 func TestHandleErrorNetworkError(t *testing.T) {
 	client := hetzner.NewClient("test-token")
-	collector := NewStorageBoxCollector(client, 0, 0, 0)
+	collector := NewStorageBoxCollector(client, 0, 0, 0, BuildInfo{})
 
 	// Simulate a network error (non-API error)
 	networkErr := &testNetworkError{message: "connection refused"}
@@ -516,7 +516,7 @@ func TestCollectorRegistration(t *testing.T) {
 	server, client := setupMockServer(t, handler)
 	defer server.Close()
 
-	collector := NewStorageBoxCollector(client, 0, 0, 0)
+	collector := NewStorageBoxCollector(client, 0, 0, 0, BuildInfo{})
 
 	// Create a new registry and register the collector
 	registry := prometheus.NewRegistry()
@@ -534,6 +534,98 @@ func TestCollectorRegistration(t *testing.T) {
 	if len(metrics) == 0 {
 		t.Error("expected at least some metrics after gathering")
 	}
+}
+
+// gaugeValue gathers metrics from the registry and returns the value of the
+// first sample of the named metric family, or -1 if the family is absent.
+func gaugeValue(t *testing.T, reg *prometheus.Registry, name string) float64 {
+	t.Helper()
+	families, err := reg.Gather()
+	if err != nil {
+		t.Fatalf("failed to gather metrics: %v", err)
+	}
+	for _, mf := range families {
+		if mf.GetName() == name {
+			return mf.GetMetric()[0].GetGauge().GetValue()
+		}
+	}
+	return -1
+}
+
+func TestCollectUpAndBuildInfo(t *testing.T) {
+	build := BuildInfo{Version: "1.2.3", Commit: "abc123", BuildDate: "2026-07-15"}
+
+	t.Run("up=1 and build_info on success", func(t *testing.T) {
+		handler := func(w http.ResponseWriter, r *http.Request) {
+			w.Header().Set("Content-Type", "application/json")
+			if err := json.NewEncoder(w).Encode(mockStorageBoxResponse()); err != nil {
+				t.Errorf("Failed to encode mock response: %v", err)
+			}
+		}
+		server, client := setupMockServer(t, handler)
+		defer server.Close()
+
+		reg := prometheus.NewRegistry()
+		if err := reg.Register(NewStorageBoxCollector(client, 0, 0, 0, build)); err != nil {
+			t.Fatalf("failed to register collector: %v", err)
+		}
+
+		if got := gaugeValue(t, reg, "storagebox_exporter_up"); got != 1 {
+			t.Errorf("expected storagebox_exporter_up=1, got %v", got)
+		}
+
+		// build_info must always be present with value 1.
+		families, _ := reg.Gather()
+		var found bool
+		for _, mf := range families {
+			if mf.GetName() != "storagebox_exporter_build_info" {
+				continue
+			}
+			found = true
+			m := mf.GetMetric()[0]
+			if m.GetGauge().GetValue() != 1 {
+				t.Errorf("expected build_info value 1, got %v", m.GetGauge().GetValue())
+			}
+			labels := map[string]string{}
+			for _, lp := range m.GetLabel() {
+				labels[lp.GetName()] = lp.GetValue()
+			}
+			if labels["version"] != "1.2.3" || labels["revision"] != "abc123" || labels["build_date"] != "2026-07-15" {
+				t.Errorf("unexpected build_info labels: %v", labels)
+			}
+			if labels["goversion"] == "" {
+				t.Error("expected goversion label to be set")
+			}
+		}
+		if !found {
+			t.Error("expected storagebox_exporter_build_info metric")
+		}
+	})
+
+	t.Run("up=0 and no storage box metrics on API error", func(t *testing.T) {
+		handler := func(w http.ResponseWriter, r *http.Request) {
+			w.WriteHeader(http.StatusInternalServerError)
+		}
+		server, client := setupMockServer(t, handler)
+		defer server.Close()
+
+		reg := prometheus.NewRegistry()
+		if err := reg.Register(NewStorageBoxCollector(client, 0, 0, 0, build)); err != nil {
+			t.Fatalf("failed to register collector: %v", err)
+		}
+
+		if got := gaugeValue(t, reg, "storagebox_exporter_up"); got != 0 {
+			t.Errorf("expected storagebox_exporter_up=0, got %v", got)
+		}
+		// Storage box metrics must be omitted on failure.
+		if got := gaugeValue(t, reg, "storagebox_disk_usage_bytes"); got != -1 {
+			t.Errorf("expected no storagebox_disk_usage_bytes on failure, got %v", got)
+		}
+		// build_info must still be present even when the scrape fails.
+		if got := gaugeValue(t, reg, "storagebox_exporter_build_info"); got != 1 {
+			t.Errorf("expected build_info present on failure, got %v", got)
+		}
+	})
 }
 
 func TestCollectWithNilSnapshotPlan(t *testing.T) {
@@ -588,7 +680,7 @@ func TestCollectWithNilSnapshotPlan(t *testing.T) {
 	server, client := setupMockServer(t, handler)
 	defer server.Close()
 
-	collector := NewStorageBoxCollector(client, 0, 0, 0)
+	collector := NewStorageBoxCollector(client, 0, 0, 0, BuildInfo{})
 
 	ch := make(chan prometheus.Metric, 100)
 	go func() {

@@ -52,7 +52,8 @@ func main() {
 	hetznerClient := hetzner.NewClient(cfg.HetznerToken)
 
 	// Create and register the storage box collector with cache
-	collector := collector.NewStorageBoxCollector(hetznerClient, cfg.CacheTTL, cfg.CacheMaxSize, cfg.CacheCleanupInterval)
+	buildInfo := collector.BuildInfo{Version: Version, Commit: GitCommit, BuildDate: BuildDate}
+	collector := collector.NewStorageBoxCollector(hetznerClient, cfg.CacheTTL, cfg.CacheMaxSize, cfg.CacheCleanupInterval, buildInfo)
 	prometheus.MustRegister(collector)
 
 	// Set up HTTP server

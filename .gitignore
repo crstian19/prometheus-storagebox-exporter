@@ -51,3 +51,6 @@ Claude.md
 
 # CommitSage configuration (development-only)
 .commitsage
+
+# lefthook personal overrides (not shared with the team)
+lefthook-local.yml
