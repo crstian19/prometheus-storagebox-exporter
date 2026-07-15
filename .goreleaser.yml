@@ -54,6 +54,25 @@ archives:
       - DESIGN.md
       - grafana-provisioning/dashboards/grafana-dashboard.json
 
+# Container images built with ko (no Dockerfile): static Chainguard base,
+# multi-arch, SBOM. Replaces the previous docker buildx + QEMU job.
+kos:
+  - id: sb-image
+    build: prometheus-storagebox-exporter
+    base_image: cgr.dev/chainguard/static
+    repositories:
+      - ghcr.io/{{ .Env.GITHUB_REPOSITORY_OWNER }}/prometheus-storagebox-exporter
+    platforms:
+      - linux/amd64
+      - linux/arm64
+    tags:
+      - "{{ .Version }}"
+      - "{{ if not .Prerelease }}latest{{ end }}"
+    bare: true
+    sbom: spdx
+    creation_time: "{{ .CommitTimestamp }}"
+    ko_data_creation_time: "{{ .CommitTimestamp }}"
+
 checksum:
   name_template: 'checksums.txt'
 

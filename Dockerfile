@@ -1,3 +1,6 @@
+# NOTE: Release images are built with ko via goreleaser (see .goreleaser.yml).
+# This Dockerfile is kept only for local `docker build` and docker-compose.
+#
 # Stage 1: Build
 FROM golang:1.26.4-alpine AS builder
 
