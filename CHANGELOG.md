@@ -1,5 +1,13 @@
 # Changelog
 
+## [v0.6.0](https://github.com/crstian19/prometheus-storagebox-exporter/releases/tag/v0.6.0)
+
+[Compare to previous version](https://github.com/crstian19/prometheus-storagebox-exporter/compare/v0.5.6...v0.6.0)
+
+### Features
+
+- **collector**: expose up and build_info metrics ([31194ae](https://github.com/crstian19/prometheus-storagebox-exporter/commit/31194ae539678dc1e03584a6fd577fff438e51c3))
+
 ## [v0.5.6](https://github.com/crstian19/prometheus-storagebox-exporter/releases/tag/v0.5.6)
 
 ### Bug Fixes
