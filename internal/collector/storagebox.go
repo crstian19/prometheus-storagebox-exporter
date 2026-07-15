@@ -4,6 +4,7 @@ import (
 	"context"
 	"log/slog"
 	"net/http"
+	"runtime"
 	"strconv"
 	"time"
 
@@ -11,6 +12,14 @@ import (
 	"github.com/crstian19/prometheus-storagebox-exporter/internal/hetzner"
 	"github.com/prometheus/client_golang/prometheus"
 )
+
+// BuildInfo carries version metadata injected at build time, exposed as the
+// storagebox_exporter_build_info metric.
+type BuildInfo struct {
+	Version   string
+	Commit    string
+	BuildDate string
+}
 
 // StorageBoxCollector implements the prometheus.Collector interface
 type StorageBoxCollector struct {
@@ -37,6 +46,9 @@ type StorageBoxCollector struct {
 	createdTimestamp  *prometheus.Desc
 
 	// Exporter metrics
+	up             *prometheus.Desc
+	buildInfo      *prometheus.Desc
+	buildInfoData  BuildInfo
 	scrapeDuration *prometheus.Desc
 	scrapeErrors   prometheus.Counter
 	cacheHits      prometheus.Counter
@@ -51,12 +63,13 @@ type StorageBoxCollector struct {
 }
 
 // NewStorageBoxCollector creates a new StorageBoxCollector
-func NewStorageBoxCollector(client *hetzner.Client, cacheTTL time.Duration, cacheMaxSize int64, cacheCleanupInterval time.Duration) *StorageBoxCollector {
+func NewStorageBoxCollector(client *hetzner.Client, cacheTTL time.Duration, cacheMaxSize int64, cacheCleanupInterval time.Duration, buildInfo BuildInfo) *StorageBoxCollector {
 	cacheEnabled := cacheTTL > 0
 	return &StorageBoxCollector{
-		client:       client,
-		cache:        cache.NewMetricsCache(cacheTTL, cacheMaxSize, cacheCleanupInterval),
-		cacheEnabled: cacheEnabled,
+		client:        client,
+		cache:         cache.NewMetricsCache(cacheTTL, cacheMaxSize, cacheCleanupInterval),
+		cacheEnabled:  cacheEnabled,
+		buildInfoData: buildInfo,
 
 		// Core storage metrics
 		diskQuota: prometheus.NewDesc(
@@ -147,6 +160,18 @@ func NewStorageBoxCollector(client *hetzner.Client, cacheTTL time.Duration, cach
 		),
 
 		// Exporter metrics
+		up: prometheus.NewDesc(
+			"storagebox_exporter_up",
+			"Whether the last scrape of the Hetzner API succeeded (1=healthy, 0=unhealthy)",
+			nil,
+			nil,
+		),
+		buildInfo: prometheus.NewDesc(
+			"storagebox_exporter_build_info",
+			"Build information of the exporter (value always 1)",
+			[]string{"version", "revision", "goversion", "build_date"},
+			nil,
+		),
 		scrapeDuration: prometheus.NewDesc(
 			"storagebox_exporter_scrape_duration_seconds",
 			"Duration of the scrape in seconds",
@@ -201,9 +226,13 @@ func (c *StorageBoxCollector) Describe(ch chan<- *prometheus.Desc) {
 	ch <- c.accessSSH
 	ch <- c.accessSamba
 	ch <- c.accessWebDAV
+	ch <- c.accessZFS
+	ch <- c.reachableExternal
 	ch <- c.snapshotPlan
 	ch <- c.protectionDelete
 	ch <- c.createdTimestamp
+	ch <- c.up
+	ch <- c.buildInfo
 	ch <- c.scrapeDuration
 	c.scrapeErrors.Describe(ch)
 	c.cacheHits.Describe(ch)
@@ -219,73 +248,68 @@ func (c *StorageBoxCollector) Describe(ch chan<- *prometheus.Desc) {
 func (c *StorageBoxCollector) Collect(ch chan<- prometheus.Metric) {
 	start := time.Now()
 
-	var boxes []hetzner.StorageBox
+	// build_info is static and always emitted, regardless of scrape outcome.
+	ch <- prometheus.MustNewConstMetric(
+		c.buildInfo,
+		prometheus.GaugeValue,
+		1,
+		c.buildInfoData.Version, c.buildInfoData.Commit, runtime.Version(), c.buildInfoData.BuildDate,
+	)
 
-	// Try to get data from cache first (only if cache is enabled)
-	if c.cacheEnabled {
-		if cachedData, found := c.cache.Get(); found {
-			c.cacheHits.Inc()
-			boxes = cachedData.([]hetzner.StorageBox)
-		} else {
-			// Cache miss - fetch from API
-			c.cacheMisses.Inc()
-
-			ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
-			defer cancel()
-
-			fetchedBoxes, err := c.client.ListStorageBoxes(ctx)
-			if err != nil {
-				c.handleError(err, "cache_miss")
-				c.scrapeErrors.Inc()
-				c.scrapeErrors.Collect(ch)
-				c.cacheHits.Collect(ch)
-				c.cacheMisses.Collect(ch)
-				c.authErrors.Collect(ch)
-				c.rateLimitErrors.Collect(ch)
-				c.serverErrors.Collect(ch)
-				c.clientErrors.Collect(ch)
-				c.networkErrors.Collect(ch)
-				return
-			}
-
-			boxes = fetchedBoxes
-			// Store in cache
-			c.cache.Set(boxes)
-		}
-	} else {
-		// Cache disabled - always fetch from API
-		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
-		defer cancel()
-
-		fetchedBoxes, err := c.client.ListStorageBoxes(ctx)
-		if err != nil {
-			c.handleError(err, "direct_api_call")
-			c.scrapeErrors.Inc()
-			c.scrapeErrors.Collect(ch)
-			c.cacheHits.Collect(ch)
-			c.cacheMisses.Collect(ch)
-			c.authErrors.Collect(ch)
-			c.rateLimitErrors.Collect(ch)
-			c.serverErrors.Collect(ch)
-			c.clientErrors.Collect(ch)
-			c.networkErrors.Collect(ch)
-			return
-		}
-
-		boxes = fetchedBoxes
+	boxes, err := c.fetchBoxes()
+	if err != nil {
+		// Source unreachable/unparseable: report up=0 and omit storage box
+		// metrics (no misleading zeros or stale values), per the exporter blueprint.
+		c.emitExporterMetrics(ch, 0, time.Since(start).Seconds())
+		return
 	}
 
 	for _, box := range boxes {
 		c.collectStorageBox(ch, &box)
 	}
 
-	// Record scrape duration
-	duration := time.Since(start).Seconds()
-	ch <- prometheus.MustNewConstMetric(
-		c.scrapeDuration,
-		prometheus.GaugeValue,
-		duration,
-	)
+	c.emitExporterMetrics(ch, 1, time.Since(start).Seconds())
+}
+
+// fetchBoxes returns the storage boxes, using the cache when enabled. On error
+// it records the appropriate error counters via handleError.
+func (c *StorageBoxCollector) fetchBoxes() ([]hetzner.StorageBox, error) {
+	if c.cacheEnabled {
+		if cachedData, found := c.cache.Get(); found {
+			c.cacheHits.Inc()
+			return cachedData.([]hetzner.StorageBox), nil
+		}
+		c.cacheMisses.Inc()
+
+		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+		defer cancel()
+
+		boxes, err := c.client.ListStorageBoxes(ctx)
+		if err != nil {
+			c.handleError(err, "cache_miss")
+			return nil, err
+		}
+		c.cache.Set(boxes)
+		return boxes, nil
+	}
+
+	// Cache disabled - always fetch from API
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+
+	boxes, err := c.client.ListStorageBoxes(ctx)
+	if err != nil {
+		c.handleError(err, "direct_api_call")
+		return nil, err
+	}
+	return boxes, nil
+}
+
+// emitExporterMetrics emits the exporter-level metrics (up, scrape duration and
+// all counters) shared by both the success and failure paths.
+func (c *StorageBoxCollector) emitExporterMetrics(ch chan<- prometheus.Metric, up, duration float64) {
+	ch <- prometheus.MustNewConstMetric(c.up, prometheus.GaugeValue, up)
+	ch <- prometheus.MustNewConstMetric(c.scrapeDuration, prometheus.GaugeValue, duration)
 
 	c.scrapeErrors.Collect(ch)
 	c.cacheHits.Collect(ch)
