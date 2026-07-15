@@ -251,9 +251,10 @@ The exporter exposes 15+ metrics organized in 4 categories:
 
 | Metric | Type | Description |
 |--------|------|-------------|
+| `storagebox_exporter_up` | Gauge | Whether the last scrape of the Hetzner API succeeded (1=healthy, 0=unhealthy). On failure, storage box metrics are omitted |
+| `storagebox_exporter_build_info` | Gauge | Build information (value always 1). Labels: version, revision, goversion, build_date |
 | `storagebox_exporter_scrape_duration_seconds` | Gauge | Duration of the scrape in seconds |
 | `storagebox_exporter_scrape_errors_total` | Counter | Total number of scrape errors |
-| `storagebox_exporter_up` | Gauge | Exporter health status (1=healthy, 0=unhealthy) |
 | `storagebox_exporter_cache_hits_total` | Counter | Total number of cache hits (0 when cache disabled) |
 | `storagebox_exporter_cache_misses_total` | Counter | Total number of cache misses (increments every scrape when cache disabled) |
 
@@ -548,20 +549,32 @@ spec:
 
 ## 🏗️ Development
 
+### Setup
+
+The toolchain is pinned with [mise](https://mise.jdx.dev) (`mise.toml`) and git hooks are
+managed with [lefthook](https://github.com/evilmartians/lefthook). One-time setup per clone:
+
+```bash
+mise install     # installs Go + golangci-lint + goreleaser + ko + lefthook + gitleaks
+make setup       # installs the git hooks (lefthook install) and downloads deps
+```
+
+Hooks: `pre-commit` runs gitleaks + `gofmt` + incremental lint; `pre-push` runs the full
+`make test` and `make lint` — the same checks as CI, so failures surface locally first.
+
 ### Building
 
 ```bash
 # Build binary
-go build -o prometheus-storagebox-exporter .
+make build            # or: go build -o prometheus-storagebox-exporter .
 
-# Build Docker image
-docker build -t prometheus-storagebox-exporter .
+# Run tests / linter (same as CI)
+make test
+make lint
 
-# Run tests
-go test -v ./...
-
-# Run linter
-golangci-lint run
+# Container image (no Dockerfile): built with ko via goreleaser on release.
+# The Dockerfile is kept only for local `docker build` / docker-compose.
+KO_DOCKER_REPO=ko.local ko build . --bare --platform=linux/amd64,linux/arm64
 ```
 
 ### Project Structure
