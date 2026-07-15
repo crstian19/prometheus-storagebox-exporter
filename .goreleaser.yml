@@ -61,7 +61,7 @@ kos:
     build: prometheus-storagebox-exporter
     base_image: cgr.dev/chainguard/static
     repositories:
-      - ghcr.io/{{ .Env.GITHUB_REPOSITORY_OWNER }}/prometheus-storagebox-exporter
+      - ghcr.io/crstian19/prometheus-storagebox-exporter
     platforms:
       - linux/amd64
       - linux/arm64
