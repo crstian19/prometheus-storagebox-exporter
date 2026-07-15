@@ -1,0 +1,32 @@
+# Git hooks (see the lefthook note in the vault). Setup once per clone:
+#   make setup    (runs `lefthook install`)
+# Hooks are a local courtesy for fast feedback; the real gate is CI.
+# The same checks run in .github/workflows/ci.yml — single source of truth.
+pre-commit:
+  parallel: true
+  commands:
+    gitleaks:
+      run: gitleaks protect --staged --no-banner
+      priority: 1 # fail-fast on secrets
+    fmt:
+      glob: "*.go"
+      run: gofmt -w {staged_files}
+      stage_fixed: true # re-stage what gofmt rewrote
+      priority: 2
+    lint:
+      glob: "*.go"
+      run: golangci-lint run --new-from-rev=HEAD
+      priority: 3
+
+pre-push:
+  piped: true # if tests fail, don't bother with the full lint
+  commands:
+    test:
+      run: make test
+    lint:
+      run: make lint
+
+commit-msg:
+  commands:
+    conventional:
+      run: .lefthook/commit-msg/validate-conventional.sh {1}
