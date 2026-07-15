@@ -2,7 +2,7 @@
 # This Dockerfile is kept only for local `docker build` and docker-compose.
 #
 # Stage 1: Build
-FROM golang:1.26.4-alpine AS builder
+FROM golang:1.26.5-alpine AS builder
 
 RUN apk add --no-cache ca-certificates tzdata
 
