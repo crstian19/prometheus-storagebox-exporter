@@ -1,7 +1,7 @@
 # Toolchain pinned per-repo (see the mise note in the vault).
 # Language toolchain to minor for build reproducibility; CLIs to latest.
 [tools]
-go = "1.26"
+go = "1.27.0"
 golangci-lint = "latest"
 goreleaser = "latest"
 ko = "latest"
