@@ -85,9 +85,16 @@ type AccessSettings struct {
 	ReachableExternally bool `json:"reachable_externally"` // Storage box reachable externally
 }
 
-// SnapshotPlan represents the automatic snapshot configuration
+// SnapshotPlan represents the automatic snapshot configuration.
+// The API signals "no plan" by sending snapshot_plan as null; a
+// configured plan carries the schedule fields below. There is no
+// "enabled" key in the response — plan presence IS the enabled state.
 type SnapshotPlan struct {
-	Enabled bool `json:"enabled"`
+	MaxSnapshots int  `json:"max_snapshots"`
+	Minute       *int `json:"minute"`
+	Hour         *int `json:"hour"`
+	DayOfWeek    *int `json:"day_of_week"`
+	DayOfMonth   *int `json:"day_of_month"`
 }
 
 // Protection represents the protection settings
