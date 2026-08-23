@@ -1,5 +1,18 @@
 # Changelog
 
+## [v0.7.0](https://github.com/crstian19/prometheus-storagebox-exporter/releases/tag/v0.7.0)
+
+[Compare to previous version](https://github.com/crstian19/prometheus-storagebox-exporter/compare/v0.6.0...v0.7.0)
+
+### Features
+
+- **deps**: update Go toolchain to 1.27.0 (#91) ([8dc5336](https://github.com/crstian19/prometheus-storagebox-exporter/commit/8dc533655961fde8ff4da26687a840b837ea3a92))
+
+### Bug Fixes
+
+- **collector**: derive snapshot_plan_enabled from plan presence (#90) ([23935f6](https://github.com/crstian19/prometheus-storagebox-exporter/commit/23935f67fca6480979ed9ea9cf846fb3c8c26cf6))
+- **deps**: update module github.com/prometheus/client_golang to v1.24.1 (#86) ([28b410f](https://github.com/crstian19/prometheus-storagebox-exporter/commit/28b410f84058dacf2c76546b9168b1ce44056ddb))
+
 ## [v0.6.0](https://github.com/crstian19/prometheus-storagebox-exporter/releases/tag/v0.6.0)
 
 [Compare to previous version](https://github.com/crstian19/prometheus-storagebox-exporter/compare/v0.5.6...v0.6.0)
