@@ -410,9 +410,11 @@ func (c *StorageBoxCollector) collectStorageBox(ch chan<- prometheus.Metric, box
 		id, name,
 	)
 
-	// Snapshot plan metric
+	// Snapshot plan metric. The API sends snapshot_plan as null when no
+	// plan is configured and an object (schedule fields, no "enabled"
+	// key) when one is — presence is the enabled signal.
 	snapshotEnabled := float64(0)
-	if box.SnapshotPlan != nil && box.SnapshotPlan.Enabled {
+	if box.SnapshotPlan != nil {
 		snapshotEnabled = 1
 	}
 	ch <- prometheus.MustNewConstMetric(

@@ -4,11 +4,13 @@ import (
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 	"time"
 
 	"github.com/crstian19/prometheus-storagebox-exporter/internal/hetzner"
 	"github.com/prometheus/client_golang/prometheus"
+	dto "github.com/prometheus/client_model/go"
 )
 
 // mockStorageBoxResponse creates a mock API response with storage boxes
@@ -45,7 +47,11 @@ func mockStorageBoxResponse() map[string]interface{} {
 					"reachable_externally": true,
 				},
 				"snapshot_plan": map[string]interface{}{
-					"enabled": true,
+					"max_snapshots": 30,
+					"minute":        0,
+					"hour":          0,
+					"day_of_week":   nil,
+					"day_of_month":  nil,
 				},
 				"protection": map[string]interface{}{
 					"delete": true,
@@ -696,5 +702,64 @@ func TestCollectWithNilSnapshotPlan(t *testing.T) {
 	// Should handle nil snapshot_plan without panicking
 	if len(metrics) < 10 {
 		t.Errorf("expected at least 10 metrics, got %d", len(metrics))
+	}
+}
+
+// snapshotPlanValues collects storagebox_snapshot_plan_enabled samples
+// keyed by the id label. A value-level assertion exists because the
+// count-only tests above passed while a fixture keyed on a nonexistent
+// "enabled" field masked the metric reading 0 for every configured plan.
+func snapshotPlanValues(t *testing.T, metrics []prometheus.Metric) map[string]float64 {
+	t.Helper()
+	values := make(map[string]float64)
+	for _, m := range metrics {
+		if !strings.Contains(m.Desc().String(), "storagebox_snapshot_plan_enabled") {
+			continue
+		}
+		var d dto.Metric
+		if err := m.Write(&d); err != nil {
+			t.Fatalf("writing metric: %v", err)
+		}
+		id := ""
+		for _, l := range d.GetLabel() {
+			if l.GetName() == "id" {
+				id = l.GetValue()
+			}
+		}
+		values[id] = d.GetGauge().GetValue()
+	}
+	return values
+}
+
+func TestSnapshotPlanEnabledValues(t *testing.T) {
+	handler := func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		if err := json.NewEncoder(w).Encode(mockStorageBoxResponse()); err != nil {
+			t.Errorf("Failed to encode mock response: %v", err)
+		}
+	}
+
+	server, client := setupMockServer(t, handler)
+	defer server.Close()
+
+	collector := NewStorageBoxCollector(client, 0, 0, 0, BuildInfo{})
+
+	ch := make(chan prometheus.Metric, 100)
+	go func() {
+		collector.Collect(ch)
+		close(ch)
+	}()
+
+	var metrics []prometheus.Metric
+	for metric := range ch {
+		metrics = append(metrics, metric)
+	}
+
+	values := snapshotPlanValues(t, metrics)
+	if got := values["12345"]; got != 1 {
+		t.Errorf("box 12345 has a configured snapshot_plan, expected enabled=1, got %v", got)
+	}
+	if got := values["12346"]; got != 0 {
+		t.Errorf("box 12346 has snapshot_plan null, expected enabled=0, got %v", got)
 	}
 }
