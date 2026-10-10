@@ -12,6 +12,10 @@ permissions:
   contents: write
   packages: write
 
+env:
+  # renovate: datasource=golang-version depName=go
+  GO_VERSION: "1.27.2"
+
 jobs:
   goreleaser:
     name: Release with GoReleaser
@@ -26,7 +30,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v7
         with:
-          go-version: '1.27.2'
+          go-version: ${{ env.GO_VERSION }}
           cache: true
 
       - name: Login to GitHub Container Registry
