@@ -1,5 +1,13 @@
 # Changelog
 
+## [v0.8.0](https://github.com/crstian19/prometheus-storagebox-exporter/releases/tag/v0.8.0)
+
+[Compare to previous version](https://github.com/crstian19/prometheus-storagebox-exporter/compare/v0.7.1...v0.8.0)
+
+### Features
+
+- **main.go**: enhance HTML structure and styling for main page (#34) ([b2014a3](https://github.com/crstian19/prometheus-storagebox-exporter/commit/b2014a37da7ffa568149732728901631e45d621f))
+
 ## [v0.7.1](https://github.com/crstian19/prometheus-storagebox-exporter/releases/tag/v0.7.1)
 
 [Compare to previous version](https://github.com/crstian19/prometheus-storagebox-exporter/compare/v0.7.0...v0.7.1)
