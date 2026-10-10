@@ -1,5 +1,13 @@
 # Changelog
 
+## [v0.7.1](https://github.com/crstian19/prometheus-storagebox-exporter/releases/tag/v0.7.1)
+
+[Compare to previous version](https://github.com/crstian19/prometheus-storagebox-exporter/compare/v0.7.0...v0.7.1)
+
+### Bug Fixes
+
+- **deps**: update module github.com/prometheus/client_golang to v1.25.0 (#97) ([b172670](https://github.com/crstian19/prometheus-storagebox-exporter/commit/b172670aca9b156044349eda3a3d8e42b2312305))
+
 ## [v0.7.0](https://github.com/crstian19/prometheus-storagebox-exporter/releases/tag/v0.7.0)
 
 [Compare to previous version](https://github.com/crstian19/prometheus-storagebox-exporter/compare/v0.6.0...v0.7.0)
