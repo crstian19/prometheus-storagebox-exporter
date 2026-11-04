@@ -1,7 +1,7 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
-    "config:recommended",
+    "github>crstian19/.github:renovate-config",
     "customManagers:githubActionsVersions"
   ]
 }
