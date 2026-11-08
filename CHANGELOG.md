@@ -1,5 +1,13 @@
 # Changelog
 
+## [v0.8.1](https://github.com/crstian19/prometheus-storagebox-exporter/releases/tag/v0.8.1)
+
+[Compare to previous version](https://github.com/crstian19/prometheus-storagebox-exporter/compare/v0.8.0...v0.8.1)
+
+### Bug Fixes
+
+- **deps**: update module github.com/spf13/pflag to v1.1.0 (#105) ([0e02579](https://github.com/crstian19/prometheus-storagebox-exporter/commit/0e025794ef077cb8ac0a7a7ca7c5c4f5a1683212))
+
 ## [v0.8.0](https://github.com/crstian19/prometheus-storagebox-exporter/releases/tag/v0.8.0)
 
 [Compare to previous version](https://github.com/crstian19/prometheus-storagebox-exporter/compare/v0.7.1...v0.8.0)
