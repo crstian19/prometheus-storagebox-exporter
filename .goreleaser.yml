@@ -88,4 +88,7 @@ release:
     name: prometheus-storagebox-exporter
   draft: false
   prerelease: auto
-  mode: replace
+  # releaser-pleaser creates the release with the changelog before this runs;
+  # keep its notes and only upload the artifacts. "replace" wiped them, since
+  # the GoReleaser changelog is disabled.
+  mode: keep-existing
