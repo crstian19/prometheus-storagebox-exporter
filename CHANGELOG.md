@@ -1,5 +1,13 @@
 # Changelog
 
+## [v0.8.2](https://github.com/crstian19/prometheus-storagebox-exporter/releases/tag/v0.8.2)
+
+[Compare to previous version](https://github.com/crstian19/prometheus-storagebox-exporter/compare/v0.8.1...v0.8.2)
+
+### Bug Fixes
+
+- **release**: keep the release notes written by releaser-pleaser (#108) ([5402849](https://github.com/crstian19/prometheus-storagebox-exporter/commit/54028494fa4dec2c52db392258de4d3153a11724))
+
 ## [v0.8.1](https://github.com/crstian19/prometheus-storagebox-exporter/releases/tag/v0.8.1)
 
 [Compare to previous version](https://github.com/crstian19/prometheus-storagebox-exporter/compare/v0.8.0...v0.8.1)
