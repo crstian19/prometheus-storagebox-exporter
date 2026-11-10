@@ -20,6 +20,10 @@ permissions:
 
 jobs:
   releaser-pleaser:
+    # Pull request events are only needed for the release PR itself (notes edits,
+    # labels). On every other PR the concurrency group cancels the run and the
+    # check shows as failed, so skip it there.
+    if: github.event_name == 'push' || github.head_ref == 'releaser-pleaser--branches--main'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
